@@ -55,7 +55,7 @@ export default function ViagensPage() {
           <button
             key={f}
             onClick={() => changeFilter(f)}
-            className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
+            className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors cursor-pointer ${
               status === f
                 ? 'bg-[#534AB7] text-white'
                 : 'bg-white text-[#6b7280] border border-[#e5e7eb]'
@@ -86,7 +86,7 @@ export default function ViagensPage() {
               <button
                 onClick={() => setPage((p) => Math.max(1, p - 1))}
                 disabled={page === 1}
-                className="px-3 py-1.5 rounded-lg text-sm border border-[#e5e7eb] disabled:opacity-50"
+                className="px-3 py-1.5 rounded-lg text-sm border border-[#e5e7eb] cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 Anterior
               </button>
@@ -96,7 +96,7 @@ export default function ViagensPage() {
               <button
                 onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
                 disabled={page === totalPages}
-                className="px-3 py-1.5 rounded-lg text-sm border border-[#e5e7eb] disabled:opacity-50"
+                className="px-3 py-1.5 rounded-lg text-sm border border-[#e5e7eb] cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 Próxima
               </button>
@@ -107,7 +107,7 @@ export default function ViagensPage() {
 
       <Link
         href="/viagens/nova"
-        className="fixed bottom-20 right-4 w-14 h-14 bg-[#534AB7] text-white rounded-full flex items-center justify-center text-2xl shadow-lg hover:bg-[#443d9a] transition-colors z-40"
+        className="fixed bottom-20 right-4 w-14 h-14 bg-[#534AB7] text-white rounded-full flex items-center justify-center text-2xl shadow-lg hover:bg-[#443d9a] transition-colors z-40 cursor-pointer"
       >
         +
       </Link>

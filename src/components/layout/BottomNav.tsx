@@ -7,7 +7,7 @@ const navItems = [
   { href: '/dashboard', label: 'Início', icon: HomeIcon },
   { href: '/viagens', label: 'Viagens', icon: TruckIcon },
   { href: '/veiculos', label: 'Veículos', icon: CarIcon },
-  { href: '#', label: 'Perfil', icon: UserIcon },
+  { href: '/perfil', label: 'Perfil', icon: UserIcon },
 ]
 
 export default function BottomNav() {
@@ -22,7 +22,7 @@ export default function BottomNav() {
             <Link
               key={item.label}
               href={item.href}
-              className={`flex flex-col items-center gap-0.5 text-xs ${
+              className={`flex flex-col items-center gap-0.5 text-xs cursor-pointer ${
                 isActive ? 'text-[#534AB7]' : 'text-[#6b7280]'
               }`}
             >

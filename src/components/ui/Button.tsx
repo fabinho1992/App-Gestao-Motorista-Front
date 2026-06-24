@@ -13,7 +13,7 @@ export default function Button({
   disabled,
   ...props
 }: ButtonProps) {
-  const base = 'px-4 py-2.5 rounded-lg font-medium text-sm transition-colors disabled:opacity-50 disabled:cursor-not-allowed'
+  const base = 'px-4 py-2.5 rounded-lg font-medium text-sm transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed'
 
   const variants = {
     primary: 'bg-[#534AB7] text-white hover:bg-[#443d9a]',

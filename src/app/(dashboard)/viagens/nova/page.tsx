@@ -69,7 +69,7 @@ export default function NovaViagemPage() {
         setErro(res.message)
         return
       }
-      router.push(`/viagens/${res.data.id}`)
+      router.push('/dashboard')
     } catch {
       setErro('Erro ao criar viagem')
     } finally {

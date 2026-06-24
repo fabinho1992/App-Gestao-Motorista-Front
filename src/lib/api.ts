@@ -45,6 +45,26 @@ export interface DashboardResumo {
   totalEntregasAtiva: number
 }
 
+// Motorista DTOs
+export interface MotoristaDto {
+  id: string
+  nome: string
+  cpf: string
+  email: string
+  telefone: string
+  cnh: string
+  vencimentoCnh: string
+}
+
+export interface AtualizarMotoristaRequest {
+  nome: string
+  cpf: string
+  email: string
+  telefone: string
+  cnh: string
+  vencimentoCnh: string
+}
+
 // Veiculo DTOs
 export interface AlertaOleo {
   nivel: 'Verde' | 'Amarelo' | 'Vermelho'
@@ -62,6 +82,35 @@ export interface Veiculo {
   kmUltimoOleo: number
   dataUltimoOleo: string
   alertaOleo: AlertaOleo
+}
+
+export interface ViagemResumoDto {
+  id: string
+  empresaContratante: string
+  dataSaida: string
+  status: string
+  valorFrete: number
+  saldoLiquido: number
+  kmRodado: number | null
+  totalEntregas: number
+}
+
+export interface VeiculoComAlerta {
+  id: string
+  placa: string
+  modelo: string
+  ano: number
+  tipoCombustivel: string
+  kmAtual: number
+  kmUltimoOleo: number
+  dataUltimoOleo: string
+  intervaloOleo: number
+  alertaOleo: {
+    nivel: 'Verde' | 'Amarelo' | 'Vermelho'
+    mensagem: string
+    kmFaltando: number
+  }
+  viagens: ViagemResumoDto[]
 }
 
 export interface CriarVeiculoRequest {
@@ -188,6 +237,18 @@ export async function registrar(body: RegistrarRequest) {
   })
 }
 
+// Motorista
+export async function getMotorista() {
+  return request<MotoristaDto>('/api/v1/motorista/perfil')
+}
+
+export async function atualizarMotorista(body: AtualizarMotoristaRequest) {
+  return request<void>('/api/v1/motorista', {
+    method: 'PUT',
+    body: JSON.stringify(body),
+  })
+}
+
 // Dashboard
 export async function getDashboardResumo(mes: number, ano: number) {
   return request<DashboardResumo>(
@@ -219,6 +280,16 @@ export async function deletarVeiculo(id: string) {
 
 export async function trocarOleo(id: string) {
   return request<Veiculo>(`/api/v1/veiculo/${id}/trocar-oleo`, {
+    method: 'PUT',
+  })
+}
+
+export async function getVeiculoDetalhes(id: string) {
+  return request<VeiculoComAlerta>(`/api/v1/veiculo/${id}`)
+}
+
+export async function trocarOleoVeiculo(id: string) {
+  return request<VeiculoComAlerta>(`/api/v1/veiculo/${id}/trocar-oleo`, {
     method: 'PUT',
   })
 }

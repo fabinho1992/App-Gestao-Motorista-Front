@@ -40,7 +40,7 @@ export default function ViagemAtiva({
       </div>
       <Link
         href={`/viagens/${viagemId}`}
-        className="text-sm text-[#534AB7] font-medium hover:underline"
+        className="text-sm text-[#534AB7] font-medium hover:underline cursor-pointer"
       >
         Ver detalhes
       </Link>

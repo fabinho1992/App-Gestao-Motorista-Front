@@ -22,7 +22,7 @@ export default function ViagemCard({ viagem }: ViagemCardProps) {
   const data = new Date(viagem.dataCriacao).toLocaleDateString('pt-BR')
 
   return (
-    <Link href={`/viagens/${viagem.id}`}>
+    <Link href={`/viagens/${viagem.id}`} className="cursor-pointer">
       <Card className="hover:border-[#534AB7] transition-colors">
         <div className="flex items-center justify-between mb-2">
           <h3 className="font-semibold text-sm truncate">{viagem.empresaContratante}</h3>

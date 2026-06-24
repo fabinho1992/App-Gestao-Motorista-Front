@@ -13,7 +13,7 @@ export default function Header() {
       </div>
       <button
         onClick={logout}
-        className="text-sm text-[#6b7280] hover:text-[#111827]"
+        className="text-sm text-[#6b7280] hover:text-[#111827] cursor-pointer"
       >
         Sair
       </button>

@@ -147,7 +147,7 @@ export default function ViagemDetalhePage({ params }: { params: Promise<{ id: st
           {podeAdicionarEntrega && (
             <button
               onClick={() => setShowNovaEntrega(!showNovaEntrega)}
-              className="text-sm text-[#534AB7] font-medium"
+              className="text-sm text-[#534AB7] font-medium cursor-pointer"
             >
               {showNovaEntrega ? 'Cancelar' : '+ Nova entrega'}
             </button>
