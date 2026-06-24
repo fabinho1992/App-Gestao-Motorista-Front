@@ -48,7 +48,7 @@ export default function RegistrarPage() {
         router.push('/login')
         return
       }
-      saveAuth(resLogin.data.token, resLogin.data.motoristaId, resLogin.data.displayname)
+      saveAuth(resLogin.data.token, resLogin.data.motoristaId, resLogin.data.displayName)
       document.cookie = `token=${resLogin.data.token}; path=/`
       router.push('/dashboard')
     } catch {
