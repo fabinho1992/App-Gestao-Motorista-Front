@@ -9,7 +9,7 @@ import EntregaItem from '@/components/features/entregas/EntregaItem'
 import FormEncerrar from '@/components/features/viagens/FormEncerrar'
 import Input from '@/components/ui/Input'
 import Alert from '@/components/ui/Alert'
-import { getViagem, getEntregasPorViagem, criarEntrega, getVeiculo } from '@/lib/api'
+import { getViagem, getEntregasPorViagem, criarEntrega, getVeiculo, atualizarStatusPagamento } from '@/lib/api'
 import type { Viagem, Entrega, AlertaOleo } from '@/lib/api'
 import BackButton from '@/components/ui/BackButton'
 
@@ -27,6 +27,8 @@ export default function ViagemDetalhePage({ params }: { params: Promise<{ id: st
   const [entregaForm, setEntregaForm] = useState({ cliente: '', enderecoDestino: '', observacao: '' })
   const [entregaLoading, setEntregaLoading] = useState(false)
   const [entregaErro, setEntregaErro] = useState('')
+  const [atualizandoPagamento, setAtualizandoPagamento] = useState(false)
+  const [pagamentoErro, setPagamentoErro] = useState('')
 
   async function loadData() {
     try {
@@ -74,6 +76,23 @@ export default function ViagemDetalhePage({ params }: { params: Promise<{ id: st
       setEntregaErro('Erro ao criar entrega')
     } finally {
       setEntregaLoading(false)
+    }
+  }
+
+  async function handleAtualizarPagamento(novoStatus: 'Pendente' | 'Pago' | 'Cancelado') {
+    setAtualizandoPagamento(true)
+    setPagamentoErro('')
+    try {
+      const res = await atualizarStatusPagamento(id, novoStatus)
+      if (res.isSuccess) {
+        await loadData()
+      } else {
+        setPagamentoErro(res.message || 'Erro ao atualizar status de pagamento')
+      }
+    } catch {
+      setPagamentoErro('Erro ao atualizar status de pagamento')
+    } finally {
+      setAtualizandoPagamento(false)
     }
   }
 
@@ -139,6 +158,65 @@ export default function ViagemDetalhePage({ params }: { params: Promise<{ id: st
             <p className="font-medium text-[#111827]">{viagem.formaPagamento}</p>
           </div>
         </div>
+      </Card>
+
+      <Card>
+        <h3 className="font-semibold text-sm mb-3">Status de pagamento</h3>
+        <div className="flex items-center gap-2 mb-1">
+          <span
+            className={`px-2 py-0.5 rounded-full text-xs font-medium ${
+              viagem.statusPagamento === 'Pago'
+                ? 'bg-green-100 text-green-800'
+                : viagem.statusPagamento === 'Cancelado'
+                ? 'bg-red-100 text-red-800'
+                : 'bg-yellow-100 text-yellow-800'
+            }`}
+          >
+            {viagem.statusPagamento}
+          </span>
+        </div>
+        <p className="text-xs text-[#6b7280] mb-3">Forma: {viagem.formaPagamento}</p>
+
+        {pagamentoErro && <p className="text-sm text-red-600 mb-2">{pagamentoErro}</p>}
+
+        {viagem.statusPagamento === 'Pendente' && (
+          <div className="flex gap-2">
+            <button
+              onClick={() => handleAtualizarPagamento('Pago')}
+              disabled={atualizandoPagamento}
+              className="bg-green-500 text-white rounded-lg h-11 flex-1 cursor-pointer hover:bg-green-600 disabled:opacity-50 text-sm font-medium"
+            >
+              Marcar como pago
+            </button>
+            <button
+              onClick={() => handleAtualizarPagamento('Cancelado')}
+              disabled={atualizandoPagamento}
+              className="border border-red-300 text-red-600 rounded-lg h-11 flex-1 cursor-pointer hover:bg-red-50 disabled:opacity-50 text-sm font-medium"
+            >
+              Cancelar pagamento
+            </button>
+          </div>
+        )}
+
+        {viagem.statusPagamento === 'Pago' && (
+          <button
+            onClick={() => handleAtualizarPagamento('Pendente')}
+            disabled={atualizandoPagamento}
+            className="border border-gray-300 text-gray-600 rounded-lg h-11 w-full cursor-pointer hover:bg-gray-50 disabled:opacity-50 text-sm font-medium"
+          >
+            Reverter para pendente
+          </button>
+        )}
+
+        {viagem.statusPagamento === 'Cancelado' && (
+          <button
+            onClick={() => handleAtualizarPagamento('Pendente')}
+            disabled={atualizandoPagamento}
+            className="border border-yellow-300 text-yellow-700 rounded-lg h-11 w-full cursor-pointer hover:bg-yellow-50 disabled:opacity-50 text-sm font-medium"
+          >
+            Reativar pagamento
+          </button>
+        )}
       </Card>
 
       <div>

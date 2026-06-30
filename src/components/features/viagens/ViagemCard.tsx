@@ -26,7 +26,20 @@ export default function ViagemCard({ viagem }: ViagemCardProps) {
       <Card className="hover:border-[#534AB7] transition-colors">
         <div className="flex items-center justify-between mb-2">
           <h3 className="font-semibold text-sm truncate">{viagem.empresaContratante}</h3>
-          <Badge color={getStatusViagemColor(viagem.status)}>{viagem.status}</Badge>
+          <div className="flex flex-col items-end gap-1">
+            <Badge color={getStatusViagemColor(viagem.status)}>{viagem.status}</Badge>
+            <span
+              className={`px-2 py-0.5 rounded-full text-xs font-medium ${
+                viagem.statusPagamento === 'Pago'
+                  ? 'bg-green-50 text-green-700'
+                  : viagem.statusPagamento === 'Cancelado'
+                  ? 'bg-red-50 text-red-700'
+                  : 'bg-yellow-50 text-yellow-700'
+              }`}
+            >
+              {viagem.statusPagamento}
+            </span>
+          </div>
         </div>
         <div className="grid grid-cols-3 gap-2 text-xs text-[#6b7280]">
           <div>

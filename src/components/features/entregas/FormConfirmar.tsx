@@ -18,39 +18,51 @@ export default function FormConfirmar({ entregaId, onSuccess }: FormConfirmarPro
   const refCamera = useRef<HTMLInputElement>(null)
   const refGaleria = useRef<HTMLInputElement>(null)
 
-  function handleFotos(e: React.ChangeEvent<HTMLInputElement>) {
-    if (e.target.files) {
-      setFotos((prev) => [...prev, ...Array.from(e.target.files!)])
-    }
-    e.target.value = ''
-  }
+ const fotosRef = useRef<File[]>([])
 
-  function removerFoto(index: number) {
-    setFotos((prev) => prev.filter((_, i) => i !== index))
+function handleFotos(e: React.ChangeEvent<HTMLInputElement>) {
+  if (e.target.files) {
+    const arquivos = Array.from(e.target.files)
+    setFotos((prev) => {
+      const novos = [...prev, ...arquivos]
+      fotosRef.current = novos  // ← atualiza a ref também
+      return novos
+    })
   }
+  e.target.value = ''
+}
 
-  async function handleConfirmar() {
-    setLoading(true)
-    setErro('')
-    try {
-      let fileList: FileList | undefined
-      if (fotos.length > 0) {
-        const dt = new DataTransfer()
-        fotos.forEach((f) => dt.items.add(f))
-        fileList = dt.files
-      }
-      const res = await confirmarEntrega(entregaId, fileList)
-      if (!res.isSuccess) {
-        setErro(res.message)
-        return
-      }
-      onSuccess()
-    } catch {
-      setErro('Erro ao confirmar entrega')
-    } finally {
-      setLoading(false)
+function removerFoto(index: number) {
+  setFotos((prev) => {
+    const novos = prev.filter((_, i) => i !== index)
+    fotosRef.current = novos  // ← atualiza a ref também
+    return novos
+  })
+}
+
+async function handleConfirmar() {
+  setLoading(true)
+  setErro('')
+  try {
+    const fotosAtuais = fotosRef.current  // ← usa a ref em vez do estado
+    console.log('Fotos via ref:', fotosAtuais.length)
+
+    const res = await confirmarEntrega(
+      entregaId,
+      fotosAtuais.length > 0 ? fotosAtuais : undefined
+    )
+
+    if (!res.isSuccess) {
+      setErro(res.message)
+      return
     }
+    onSuccess()
+  } catch {
+    setErro('Erro ao confirmar entrega')
+  } finally {
+    setLoading(false)
   }
+}
 
   async function handleFalha() {
     if (!motivo.trim()) {

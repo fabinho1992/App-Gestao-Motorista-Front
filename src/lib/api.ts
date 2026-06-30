@@ -134,6 +134,7 @@ export interface Viagem {
   valorFrete: number
   formaPagamento: string
   status: 'Aberta' | 'EmRota' | 'Encerrada'
+  statusPagamento: 'Pendente' | 'Pago' | 'Cancelado'
   dataCriacao: string
   dataEncerramento: string | null
   gastoCombustivel: number
@@ -142,6 +143,10 @@ export interface Viagem {
   gastoOutros: number
   obsEncerramento: string | null
   lucro: number
+}
+
+export interface AtualizarStatusPagamentoRequest {
+  novoStatus: 'Pendente' | 'Pago' | 'Cancelado'
 }
 
 export interface CriarViagemRequest {
@@ -325,6 +330,16 @@ export async function encerrarViagem(id: string, body: EncerrarViagemRequest) {
   })
 }
 
+export async function atualizarStatusPagamento(
+  id: string,
+  novoStatus: 'Pendente' | 'Pago' | 'Cancelado'
+) {
+  return request<void>(`/api/v1/viagem/${id}/status-pagamento`, {
+    method: 'PUT',
+    body: JSON.stringify({ novoStatus }),
+  })
+}
+
 // Entrega
 export async function getEntregasPorViagem(viagemId: string) {
   return request<Entrega[]>(`/api/v1/entrega/viagem/${viagemId}`)
@@ -337,17 +352,19 @@ export async function criarEntrega(body: CriarEntregaRequest) {
   })
 }
 
-export async function confirmarEntrega(id: string, fotos?: FileList) {
+// src/lib/api.ts
+export async function confirmarEntrega(id: string, fotos?: File[]) {
   const formData = new FormData()
-  if (fotos) {
-    for (let i = 0; i < fotos.length; i++) {
-      formData.append('fotos', fotos[i])
-    }
+  if (fotos && fotos.length > 0) {
+    fotos.forEach((foto) => {
+      formData.append('fotos', foto)
+    })
   }
   return request<Entrega>(`/api/v1/entrega/${id}/confirmar`, {
     method: 'PUT',
     body: formData,
   })
+
 }
 
 export async function registrarFalhaEntrega(id: string, motivo: string) {

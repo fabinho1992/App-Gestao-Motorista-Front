@@ -32,6 +32,7 @@ export default function DashboardPage() {
       try {
         const resVeiculos = await getVeiculos()
         if (resVeiculos.isSuccess) setVeiculos(resVeiculos.data)
+          console.log(resVeiculos.data);
       } catch {
         setErro('Erro ao carregar veículos')
       }
