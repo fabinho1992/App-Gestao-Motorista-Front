@@ -8,6 +8,7 @@ import Button from '@/components/ui/Button'
 import { registrar, login } from '@/lib/api'
 import { saveAuth } from '@/lib/auth'
 import BackButton from '@/components/ui/BackButton'
+import { formatarCpf, parsearCpf, formatarTelefone, parsearTelefone } from '@/lib/masks'
 
 export default function RegistrarPage() {
   const router = useRouter()
@@ -69,8 +70,8 @@ export default function RegistrarPage() {
         <form onSubmit={onSubmit} className="flex flex-col gap-3">
           <Input label="Nome completo" name="nome" placeholder="Seu nome" value={form.nome} onChange={onChange} />
           <Input label="Email" name="email" type="email" placeholder="seu@email.com" value={form.email} onChange={onChange} />
-          <Input label="CPF" name="cpf" placeholder="000.000.000-00" value={form.cpf} onChange={onChange} />
-          <Input label="Telefone" name="telefone" placeholder="(00) 00000-0000" value={form.telefone} onChange={onChange} />
+          <Input label="CPF" name="cpf" placeholder="000.000.000-00" inputMode="numeric" value={formatarCpf(form.cpf)} onChange={(e) => setForm({ ...form, cpf: parsearCpf(e.target.value) })} />
+          <Input label="Telefone" name="telefone" placeholder="(00) 00000-0000" inputMode="numeric" value={formatarTelefone(form.telefone)} onChange={(e) => setForm({ ...form, telefone: parsearTelefone(e.target.value) })} />
           <Input label="CNH" name="cnh" placeholder="Número da CNH" value={form.cnh} onChange={onChange} />
           <Input label="Vencimento CNH" name="vencimentoCnh" type="date" value={form.vencimentoCnh} onChange={onChange} />
           <div className="flex flex-col gap-1">

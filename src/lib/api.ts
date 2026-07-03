@@ -121,6 +121,7 @@ export interface CriarVeiculoRequest {
   kmAtual: number
   kmUltimoOleo: number
   dataUltimoOleo: string
+  intervaloOleo: number
 }
 
 // Viagem DTOs
@@ -135,14 +136,14 @@ export interface Viagem {
   formaPagamento: string
   status: 'Aberta' | 'EmRota' | 'Encerrada'
   statusPagamento: 'Pendente' | 'Pago' | 'Cancelado'
-  dataCriacao: string
+  criadoEm: string
   dataEncerramento: string | null
   gastoCombustivel: number
   gastoPedagio: number
   gastoAlimentacao: number
   gastoOutros: number
   obsEncerramento: string | null
-  lucro: number
+  saldoLiquido: number
 }
 
 export interface AtualizarStatusPagamentoRequest {
@@ -254,6 +255,12 @@ export async function atualizarMotorista(body: AtualizarMotoristaRequest) {
   })
 }
 
+export async function resetarDados() {
+  return request<void>('/api/v1/motorista/resetar', {
+    method: 'DELETE',
+  })
+}
+
 // Dashboard
 export async function getDashboardResumo(mes: number, ano: number) {
   return request<DashboardResumo>(
@@ -302,6 +309,9 @@ export async function trocarOleoVeiculo(id: string) {
 // Viagem
 export async function getViagens(
   status?: string,
+  dataInicio?: string,
+  dataFim?: string,
+  empresaContratante?: string,
   pageNumber = 1,
   pageSize = 10
 ) {
@@ -309,7 +319,14 @@ export async function getViagens(
   if (status && status !== 'Todos') {
     url += `&status=${status}`
   }
+  if (dataInicio) url += `&dataInicio=${dataInicio}`
+  if (dataFim) url += `&dataFim=${dataFim}`
+  if (empresaContratante) url += `&empresaContratante=${empresaContratante}`
   return request<Viagem[]>(url)
+}
+
+export async function getEmpresasDistintas() {
+  return request<string[]>('/api/v1/viagem/empresas')
 }
 
 export async function getViagem(id: string) {

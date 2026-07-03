@@ -12,14 +12,14 @@ export default function ViagemCard({ viagem }: ViagemCardProps) {
     style: 'currency',
     currency: 'BRL',
   })
-  const lucro = (viagem.lucro ?? 0).toLocaleString('pt-BR', {
+  const lucro = (viagem.saldoLiquido ?? 0).toLocaleString('pt-BR', {
     style: 'currency',
     currency: 'BRL',
   })
   const km = viagem.kmFinal
     ? (viagem.kmFinal - viagem.kmInicial).toLocaleString('pt-BR')
     : '-'
-  const data = new Date(viagem.dataCriacao).toLocaleDateString('pt-BR')
+  const data = new Date(viagem.criadoEm).toLocaleDateString('pt-BR')
 
   return (
     <Link href={`/viagens/${viagem.id}`} className="cursor-pointer">

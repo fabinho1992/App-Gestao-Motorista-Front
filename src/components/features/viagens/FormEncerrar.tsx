@@ -4,6 +4,7 @@ import { useState } from 'react'
 import Input from '@/components/ui/Input'
 import Button from '@/components/ui/Button'
 import { encerrarViagem } from '@/lib/api'
+import { formatarNumero, parsearNumero, formatarDinheiro } from '@/lib/masks'
 
 interface FormEncerrarProps {
   viagemId: string
@@ -16,7 +17,7 @@ export default function FormEncerrar({ viagemId, onSuccess, onCancel }: FormEnce
   const [erro, setErro] = useState('')
   const [form, setForm] = useState({
     kmFinal: '',
-    gastoCombustivel: '',
+    gastoCombustivel: '',  // ← guarda só os números ex: "32312" = R$ 323,12
     gastoPedagio: '',
     gastoAlimentacao: '',
     gastoOutros: '',
@@ -25,6 +26,20 @@ export default function FormEncerrar({ viagemId, onSuccess, onCancel }: FormEnce
 
   function onChange(e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) {
     setForm({ ...form, [e.target.name]: e.target.value })
+  }
+
+  // extrai só números do input de dinheiro
+  function onChangeDinheiro(campo: string) {
+    return (e: React.ChangeEvent<HTMLInputElement>) => {
+      const apenasNumeros = e.target.value.replace(/\D/g, '')
+      setForm({ ...form, [campo]: apenasNumeros })
+    }
+  }
+
+  // converte string de centavos para number ex: "32312" → 323.12
+  function centavosParaNumero(valor: string): number {
+    if (!valor || valor === '') return 0
+    return Number(valor) / 100
   }
 
   async function onSubmit(e: React.FormEvent) {
@@ -37,12 +52,12 @@ export default function FormEncerrar({ viagemId, onSuccess, onCancel }: FormEnce
     setErro('')
     try {
       const res = await encerrarViagem(viagemId, {
-        kmFinal: Number(form.kmFinal),
-        gastoCombustivel: Number(form.gastoCombustivel) || 0,
-        gastoPedagio: Number(form.gastoPedagio) || 0,
-        gastoAlimentacao: Number(form.gastoAlimentacao) || 0,
-        gastoOutros: Number(form.gastoOutros) || 0,
-        obsEncerramento: form.obsEncerramento,
+        kmFinal:          Number(form.kmFinal.replace(/\D/g, '')),
+        gastoCombustivel: centavosParaNumero(form.gastoCombustivel),
+        gastoPedagio:     centavosParaNumero(form.gastoPedagio),
+        gastoAlimentacao: centavosParaNumero(form.gastoAlimentacao),
+        gastoOutros:      centavosParaNumero(form.gastoOutros),
+        obsEncerramento:  form.obsEncerramento,
       })
       if (!res.isSuccess) {
         setErro(res.message)
@@ -60,11 +75,61 @@ export default function FormEncerrar({ viagemId, onSuccess, onCancel }: FormEnce
     <div className="bg-[#f9fafb] rounded-xl border border-[#e5e7eb] p-4 mt-4">
       <h3 className="font-semibold text-sm mb-3">Encerrar viagem</h3>
       <form onSubmit={onSubmit} className="flex flex-col gap-3">
-        <Input label="Km Final *" name="kmFinal" type="number" value={form.kmFinal} onChange={onChange} />
-        <Input label="Gasto Combustível (R$)" name="gastoCombustivel" type="number" step="0.01" value={form.gastoCombustivel} onChange={onChange} />
-        <Input label="Gasto Pedágio (R$)" name="gastoPedagio" type="number" step="0.01" value={form.gastoPedagio} onChange={onChange} />
-        <Input label="Gasto Alimentação (R$)" name="gastoAlimentacao" type="number" step="0.01" value={form.gastoAlimentacao} onChange={onChange} />
-        <Input label="Outros gastos (R$)" name="gastoOutros" type="number" step="0.01" value={form.gastoOutros} onChange={onChange} />
+
+        <Input
+          label="Km Final *"
+          name="kmFinal"
+          type="text"
+          inputMode="numeric"
+          value={formatarNumero(form.kmFinal)}
+          onChange={(e) => setForm({ ...form, kmFinal: String(parsearNumero(e.target.value)) })}
+          className="min-h-[44px]"
+        />
+
+        <Input
+          label="Gasto Combustível (R$)"
+          name="gastoCombustivel"
+          type="text"
+          inputMode="numeric"
+          placeholder="0,00"
+          value={formatarDinheiro(form.gastoCombustivel)}
+          onChange={onChangeDinheiro('gastoCombustivel')}
+          className="min-h-[44px]"
+        />
+
+        <Input
+          label="Gasto Pedágio (R$)"
+          name="gastoPedagio"
+          type="text"
+          inputMode="numeric"
+          placeholder="0,00"
+          value={formatarDinheiro(form.gastoPedagio)}
+          onChange={onChangeDinheiro('gastoPedagio')}
+          className="min-h-[44px]"
+        />
+
+        <Input
+          label="Gasto Alimentação (R$)"
+          name="gastoAlimentacao"
+          type="text"
+          inputMode="numeric"
+          placeholder="0,00"
+          value={formatarDinheiro(form.gastoAlimentacao)}
+          onChange={onChangeDinheiro('gastoAlimentacao')}
+          className="min-h-[44px]"
+        />
+
+        <Input
+          label="Outros gastos (R$)"
+          name="gastoOutros"
+          type="text"
+          inputMode="numeric"
+          placeholder="0,00"
+          value={formatarDinheiro(form.gastoOutros)}
+          onChange={onChangeDinheiro('gastoOutros')}
+          className="min-h-[44px]"
+        />
+
         <div className="flex flex-col gap-1">
           <label className="text-sm font-medium text-[#111827]">Observações</label>
           <textarea
@@ -75,7 +140,9 @@ export default function FormEncerrar({ viagemId, onSuccess, onCancel }: FormEnce
             className="px-3 py-2.5 rounded-lg border border-[#e5e7eb] bg-white text-sm focus:outline-none focus:ring-2 focus:ring-[#534AB7]"
           />
         </div>
+
         {erro && <p className="text-sm text-red-600">{erro}</p>}
+
         <div className="flex gap-2">
           <Button type="submit" loading={loading} className="flex-1">Encerrar</Button>
           <Button type="button" variant="secondary" onClick={onCancel} className="flex-1">Cancelar</Button>

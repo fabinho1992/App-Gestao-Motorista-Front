@@ -6,6 +6,7 @@ import Input from '@/components/ui/Input'
 import Button from '@/components/ui/Button'
 import { criarVeiculo } from '@/lib/api'
 import BackButton from '@/components/ui/BackButton'
+import { formatarNumero, parsearNumero } from '@/lib/masks'
 
 const tiposCombustivel = ['Diesel', 'Gasolina', 'Etanol', 'GNV']
 
@@ -21,6 +22,7 @@ export default function NovoVeiculoPage() {
     kmAtual: '',
     kmUltimoOleo: '',
     dataUltimoOleo: '',
+    intervaloOleo: 5000,
   })
 
   function onChange(e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) {
@@ -44,6 +46,7 @@ export default function NovoVeiculoPage() {
         kmAtual: Number(form.kmAtual),
         kmUltimoOleo: Number(form.kmUltimoOleo) || 0,
         dataUltimoOleo: form.dataUltimoOleo || new Date().toISOString().split('T')[0],
+        intervaloOleo: form.intervaloOleo,
       })
       if (!res.isSuccess) {
         setErro(res.message)
@@ -81,8 +84,10 @@ export default function NovoVeiculoPage() {
           </select>
         </div>
 
-        <Input label="Km atual *" name="kmAtual" type="number" value={form.kmAtual} onChange={onChange} />
-        <Input label="Km último óleo" name="kmUltimoOleo" type="number" value={form.kmUltimoOleo} onChange={onChange} />
+        <Input label="Km atual *" name="kmAtual" type="text" inputMode="numeric" value={formatarNumero(form.kmAtual)} onChange={(e) => setForm({ ...form, kmAtual: String(parsearNumero(e.target.value)) })} className="min-h-[44px]" />
+        <Input label="Km último óleo" name="kmUltimoOleo" type="text" inputMode="numeric" value={formatarNumero(form.kmUltimoOleo)} onChange={(e) => setForm({ ...form, kmUltimoOleo: String(parsearNumero(e.target.value)) })} className="min-h-[44px]" />
+        <Input label="Intervalo de troca de óleo (km)" name="intervaloOleo" type="text" inputMode="numeric" value={formatarNumero(form.intervaloOleo)} onChange={(e) => setForm({ ...form, intervaloOleo: parsearNumero(e.target.value) })} className="min-h-[44px]" />
+
         <Input label="Data último óleo" name="dataUltimoOleo" type="date" value={form.dataUltimoOleo} onChange={onChange} />
 
         {erro && <p className="text-sm text-red-600">{erro}</p>}
