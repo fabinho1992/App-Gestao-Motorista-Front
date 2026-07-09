@@ -6,6 +6,11 @@ const publicPaths = ['/login', '/registrar']
 export function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl
 
+  // ← adiciona isso — ignora arquivos estáticos com extensão
+  if (pathname.includes('.')) {
+    return NextResponse.next()
+  }
+
   const isPublic = publicPaths.some(
     (path) => pathname === path || pathname.startsWith(path + '/')
   )
