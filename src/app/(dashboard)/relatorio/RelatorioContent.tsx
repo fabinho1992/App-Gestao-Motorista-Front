@@ -4,8 +4,9 @@ import { useState, useEffect, useCallback } from 'react'
 import Link from 'next/link'
 import { useSearchParams } from 'next/navigation'
 import BackButton from '@/components/ui/BackButton'
-import { getRelatorioCombustivel } from '@/lib/api'
-import type { RelatorioCombustivelDto } from '@/lib/api'
+import { getRelatorioCombustivel, getDashboardResumo } from '@/lib/api'
+import type { RelatorioCombustivelDto, DashboardResumo } from '@/lib/api'
+import { gerarRelatorioPdf } from '@/lib/gerarRelatorioPdf'
 
 const meses = [
   'Janeiro', 'Fevereiro', 'Março', 'Abril',
@@ -34,9 +35,11 @@ export default function RelatorioContent() {
   const [mes, setMes] = useState(mesParam ? Number(mesParam) : mesAtual)
   const [ano, setAno] = useState(anoParam ? Number(anoParam) : anoAtual)
   const [relatorio, setRelatorio] = useState<RelatorioCombustivelDto | null>(null)
+  const [resumo, setResumo] = useState<DashboardResumo | null>(null)
   const [loading, setLoading] = useState(true)
   const [erro, setErro] = useState('')
   const [viagemAbertaIndex, setViagemAbertaIndex] = useState<number | null>(null)
+  const [gerandoPdf, setGerandoPdf] = useState(false)
 
   const load = useCallback(async () => {
     setLoading(true)
@@ -45,12 +48,28 @@ export default function RelatorioContent() {
       const res = await getRelatorioCombustivel(mes, ano)
       if (res.isSuccess) setRelatorio(res.data)
       else setErro(res.message)
+
+      const resResumo = await getDashboardResumo(mes, ano)
+      if (resResumo.isSuccess) setResumo(resResumo.data)
     } catch {
       setErro('Erro ao carregar relatório')
     } finally {
       setLoading(false)
     }
   }, [mes, ano])
+
+  async function handleGerarPdf() {
+    if (!relatorio || !resumo) return
+    setGerandoPdf(true)
+    try {
+      const nomeMotorista = localStorage.getItem('nome') || 'Motorista'
+      gerarRelatorioPdf(relatorio.nomeMes, ano, nomeMotorista, resumo, relatorio)
+    } catch {
+      console.error('Erro ao gerar PDF')
+    } finally {
+      setGerandoPdf(false)
+    }
+  }
 
   useEffect(() => {
     load()
@@ -85,6 +104,27 @@ export default function RelatorioContent() {
     <div>
       <BackButton href="/dashboard" label="Início" />
       <h2 className="text-xl font-bold mt-2 mb-4">Relatório de gastos</h2>
+
+      <button
+        onClick={handleGerarPdf}
+        disabled={gerandoPdf || !relatorio}
+        className="flex items-center gap-2 px-4 py-2.5 rounded-lg
+                   bg-[#534AB7] text-white text-sm font-medium
+                   cursor-pointer hover:opacity-90 transition-opacity
+                   disabled:opacity-50 disabled:cursor-not-allowed"
+      >
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+          <path
+            d="M12 15V3m0 12l-4-4m4 4l4-4M2 17l.621 2.485A2 2 0 004.561 21h14.878a2 2 0 001.94-1.515L22 17"
+            stroke="white"
+            fill="none"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          />
+        </svg>
+        {gerandoPdf ? 'Gerando PDF...' : 'Baixar PDF'}
+      </button>
 
       <div className="flex items-center justify-center gap-4 py-2">
         <button

@@ -170,8 +170,12 @@ export default function NovaViagemPage() {
               kmInicial: String(parsearNumero(e.target.value)),
             })
           }
-          className="min-h-[44px]"
+          readOnly={true}
+          className="min-h-[44px] bg-gray-100 cursor-not-allowed text-gray-500"
         />
+        <p className="text-xs text-gray-400 -mt-1">
+          Preenchido automaticamente com o km atual do veículo
+        </p>
         {veiculoAtual && (
           <p className="text-xs text-gray-500 -mt-1">
             Km atual do veículo: {veiculoAtual.kmAtual.toLocaleString("pt-BR")} km

@@ -146,6 +146,47 @@ export default function DashboardPage() {
         />
       </div>
 
+      {resumo.totalAReceber > 0 && (
+        <div className="border border-amber-200 rounded-xl p-4 bg-amber-50">
+          <div className="flex items-center gap-2">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-amber-600">
+              <path d="M12 2a10 10 0 100 20A10 10 0 0012 2z" />
+              <path d="M12 6v6l4 2" />
+            </svg>
+            <span className="text-sm font-semibold text-amber-800">A receber</span>
+          </div>
+
+          <p className="text-2xl font-bold text-amber-700 mt-1">
+            {resumo.totalAReceber.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
+          </p>
+          <p className="text-xs text-amber-600 mt-1">
+            {resumo.viajensPendentePagamento} viagem(ns) encerrada(s) aguardando pagamento
+          </p>
+
+          <div className="border-t border-amber-200 mt-3 pt-3 grid grid-cols-2 gap-3">
+            <div>
+              <p className="text-xs text-amber-600">Gastos realizados</p>
+              <p className="text-sm font-medium text-amber-800">
+                {resumo.totalGastosPendentes.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
+              </p>
+            </div>
+            <div>
+              <p className="text-xs text-amber-600">Lucro estimado</p>
+              <p className={`text-sm font-medium ${resumo.lucroEstimadoPendente >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                {resumo.lucroEstimadoPendente.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
+              </p>
+            </div>
+          </div>
+
+          <Link
+            href="/viagens?status=Encerrada"
+            className="block text-xs text-amber-700 underline cursor-pointer mt-3"
+          >
+            Ver viagens pendentes
+          </Link>
+        </div>
+      )}
+
       {resumo.temViagemAtiva && resumo.viagemAtivaId && (
         <ViagemAtiva
           viagemId={resumo.viagemAtivaId}

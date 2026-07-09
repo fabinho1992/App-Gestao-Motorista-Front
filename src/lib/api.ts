@@ -43,6 +43,10 @@ export interface DashboardResumo {
   viagemAtivaStatus: string | null
   entregasConcluidasAtiva: number
   totalEntregasAtiva: number
+  totalAReceber: number
+  viajensPendentePagamento: number
+  totalGastosPendentes: number
+  lucroEstimadoPendente: number
 }
 
 // Motorista DTOs
