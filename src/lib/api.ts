@@ -261,10 +261,45 @@ export async function resetarDados() {
   })
 }
 
+export interface DetalheCombustivelDto {
+  viagemId: string
+  empresaContratante: string
+  dataEncerramento: string
+  gastoCombustivel: number
+  gastoPedagio: number
+  gastoAlimentacao: number
+  gastoOutros: number
+  totalGastos: number
+  kmRodado: number
+  valorFrete: number
+  saldoLiquido: number
+}
+
+export interface RelatorioCombustivelDto {
+  mes: number
+  ano: number
+  nomeMes: string
+  totalGastoCombustivel: number
+  totalGastoPedagio: number
+  totalGastoAlimentacao: number
+  totalGastoOutros: number
+  totalGastosGeral: number
+  totalKmRodado: number
+  mediaKmPorLitro: number
+  totalViagensEncerradas: number
+  viagens: DetalheCombustivelDto[]
+}
+
 // Dashboard
 export async function getDashboardResumo(mes: number, ano: number) {
   return request<DashboardResumo>(
     `/api/v1/dashboard/resumo?mes=${mes}&ano=${ano}`
+  )
+}
+
+export async function getRelatorioCombustivel(mes: number, ano: number) {
+  return request<RelatorioCombustivelDto>(
+    `/api/v1/dashboard/relatorio-combustivel?mes=${mes}&ano=${ano}`
   )
 }
 

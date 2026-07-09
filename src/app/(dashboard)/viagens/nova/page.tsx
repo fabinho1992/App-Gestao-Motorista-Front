@@ -38,7 +38,11 @@ export default function NovaViagemPage() {
         if (res.isSuccess) {
           setVeiculos(res.data);
           if (res.data.length > 0) {
-            setForm((f) => ({ ...f, veiculoId: res.data[0].id }));
+            setForm((f) => ({
+              ...f,
+              veiculoId: res.data[0].id,
+              kmInicial: String(res.data[0].kmAtual),
+            }));
           }
         }
       } catch {
@@ -54,6 +58,17 @@ export default function NovaViagemPage() {
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>,
   ) {
     setForm({ ...form, [e.target.name]: e.target.value });
+  }
+
+  function onChangeVeiculo(e: React.ChangeEvent<HTMLSelectElement>) {
+    const veiculoSelecionado = veiculos.find((v) => v.id === e.target.value);
+    setForm({
+      ...form,
+      veiculoId: e.target.value,
+      kmInicial: veiculoSelecionado
+        ? String(veiculoSelecionado.kmAtual)
+        : form.kmInicial,
+    });
   }
 
   async function onSubmit(e: React.FormEvent) {
@@ -76,7 +91,7 @@ export default function NovaViagemPage() {
         origem: form.origem,
         empresaContratante: form.empresaContratante,
         kmInicial: Number(form.kmInicial),
-        valorFrete: Number(form.valorFrete),
+        valorFrete: Number(form.valorFrete) / 100,  // ← divide por 100
         formaPagamento: form.formaPagamento,
       });
       if (!res.isSuccess) {
@@ -97,6 +112,8 @@ export default function NovaViagemPage() {
     );
   }
 
+  const veiculoAtual = veiculos.find((v) => v.id === form.veiculoId);
+
   return (
     <div>
       <BackButton href="/viagens" label="Viagens" />
@@ -116,7 +133,7 @@ export default function NovaViagemPage() {
           <select
             name="veiculoId"
             value={form.veiculoId}
-            onChange={onChange}
+            onChange={onChangeVeiculo}
             className="px-3 py-2.5 rounded-lg border border-[#e5e7eb] bg-white text-sm focus:outline-none focus:ring-2 focus:ring-[#534AB7]"
           >
             {veiculos.map((v) => (
@@ -155,6 +172,11 @@ export default function NovaViagemPage() {
           }
           className="min-h-[44px]"
         />
+        {veiculoAtual && (
+          <p className="text-xs text-gray-500 -mt-1">
+            Km atual do veículo: {veiculoAtual.kmAtual.toLocaleString("pt-BR")} km
+          </p>
+        )}
         <Input
           label="Valor do frete (R$) *"
           name="valorFrete"

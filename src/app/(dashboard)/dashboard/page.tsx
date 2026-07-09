@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import MetricCard from '@/components/features/dashboard/MetricCard'
 import ViagemAtiva from '@/components/features/dashboard/ViagemAtiva'
+import RelatorioCombustivel from '@/components/features/dashboard/RelatorioCombustivel'
 import Button from '@/components/ui/Button'
 import { getDashboardResumo, getVeiculos } from '@/lib/api'
 import type { DashboardResumo, Veiculo } from '@/lib/api'
@@ -154,6 +155,11 @@ export default function DashboardPage() {
           totalEntregas={resumo.totalEntregasAtiva}
         />
       )}
+
+      <div>
+        <p className="text-sm font-semibold text-gray-700 mb-2 mt-2">Relatório de gastos</p>
+        <RelatorioCombustivel mes={mes} ano={ano} />
+      </div>
 
       <Link href="/viagens/nova" className="cursor-pointer">
         {resumo.temViagemAtiva ? (
