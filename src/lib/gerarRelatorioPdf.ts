@@ -289,7 +289,7 @@ export function gerarRelatorioPdf(
   }
 
   // Rodapé em todas as páginas
-  const totalPaginas = doc.internal.getNumberOfPages()
+  const totalPaginas = (doc.internal.pages.length - 1)
   const dataGeracao = new Date().toLocaleDateString('pt-BR')
   for (let i = 1; i <= totalPaginas; i++) {
     doc.setPage(i)
