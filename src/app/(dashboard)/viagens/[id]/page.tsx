@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, use } from 'react'
+import { useState, useEffect, useCallback, use } from 'react'
 import { useRouter } from 'next/navigation'
 import Card from '@/components/ui/Card'
 import Badge, { getStatusViagemColor } from '@/components/ui/Badge'
@@ -9,7 +9,7 @@ import EntregaItem from '@/components/features/entregas/EntregaItem'
 import FormEncerrar from '@/components/features/viagens/FormEncerrar'
 import Input from '@/components/ui/Input'
 import Alert from '@/components/ui/Alert'
-import { getViagem, getEntregasPorViagem, criarEntrega, getVeiculo, atualizarStatusPagamento } from '@/lib/api'
+import { getViagem, getEntregasPorViagem, criarEntrega, getVeiculo, atualizarStatusPagamento, excluirViagem } from '@/lib/api'
 import type { Viagem, Entrega, AlertaOleo } from '@/lib/api'
 import BackButton from '@/components/ui/BackButton'
 
@@ -29,26 +29,29 @@ export default function ViagemDetalhePage({ params }: { params: Promise<{ id: st
   const [entregaErro, setEntregaErro] = useState('')
   const [atualizandoPagamento, setAtualizandoPagamento] = useState(false)
   const [pagamentoErro, setPagamentoErro] = useState('')
+  const [confirmandoExclusaoViagem, setConfirmandoExclusaoViagem] = useState(false)
+  const [excluindoViagem, setExcluindoViagem] = useState(false)
+  const [erroExclusaoViagem, setErroExclusaoViagem] = useState('')
 
-  async function loadData() {
-    try {
-      const [resViagem, resEntregas] = await Promise.all([
-        getViagem(id),
-        getEntregasPorViagem(id),
-      ])
-      if (resViagem.isSuccess) setViagem(resViagem.data)
-      else setErro(resViagem.message)
-      if (resEntregas.isSuccess) setEntregas(resEntregas.data)
-    } catch {
-      setErro('Erro ao carregar viagem')
-    } finally {
-      setLoading(false)
-    }
+  const loadData = useCallback(async () => {
+  try {
+    const [resViagem, resEntregas] = await Promise.all([
+      getViagem(id),
+      getEntregasPorViagem(id),
+    ])
+    if (resViagem.isSuccess) setViagem(resViagem.data)
+    else setErro(resViagem.message)
+    if (resEntregas.isSuccess) setEntregas(resEntregas.data)
+  } catch {
+    setErro('Erro ao carregar viagem')
+  } finally {
+    setLoading(false)
   }
+}, [id])
 
   useEffect(() => {
-    loadData()
-  }, [id])
+  loadData()
+}, [loadData])
 
   async function handleNovaEntrega(e: React.FormEvent) {
     e.preventDefault()
@@ -114,6 +117,25 @@ export default function ViagemDetalhePage({ params }: { params: Promise<{ id: st
       }
     }
     setLoading(false)
+  }
+
+  async function handleExcluirViagem() {
+    setExcluindoViagem(true)
+    setErroExclusaoViagem('')
+    try {
+      const res = await excluirViagem(id)
+      if (res.isSuccess) {
+        router.push('/viagens')
+      } else {
+        setErroExclusaoViagem(res.message)
+        setConfirmandoExclusaoViagem(false)
+      }
+    } catch {
+      setErroExclusaoViagem('Erro ao excluir viagem')
+      setConfirmandoExclusaoViagem(false)
+    } finally {
+      setExcluindoViagem(false)
+    }
   }
 
   if (loading) return <p className="text-sm text-[#6b7280] text-center py-8">Carregando...</p>
@@ -309,6 +331,53 @@ export default function ViagemDetalhePage({ params }: { params: Promise<{ id: st
           )}
         </Card>
       )}
+
+      {(viagem.status === 'Aberta' || viagem.status === 'EmRota') && (
+  !confirmandoExclusaoViagem ? (
+    <button
+      onClick={() => setConfirmandoExclusaoViagem(true)}
+      className="border border-red-300 text-red-500 w-full h-12 rounded-lg cursor-pointer hover:bg-red-50 font-medium text-sm mt-4"
+    >
+      Excluir viagem
+    </button>
+  ) : (
+    <div className="bg-red-50 border border-red-200 rounded-lg p-4 mt-4">
+      <p className="text-sm font-medium text-red-700 text-center mb-1">
+        Tem certeza que deseja excluir esta viagem?
+      </p>
+      <p className="text-xs text-red-500 text-center mb-3">
+        Esta ação não pode ser desfeita.
+      </p>
+      {viagem.status === 'EmRota' && viagem.entregas && viagem.entregas.length > 0 && (
+        <p className="text-xs text-red-600 text-center mb-2">
+          Esta viagem possui {viagem.entregas.length} entrega(s) vinculada(s).
+          Todas serão excluídas junto com a viagem.
+        </p>
+      )}
+      {erroExclusaoViagem && (
+        <p className="text-sm text-red-600 text-center mb-2">{erroExclusaoViagem}</p>
+      )}
+      <div className="flex gap-2">
+        <button
+          onClick={() => {
+            setConfirmandoExclusaoViagem(false)
+            setErroExclusaoViagem('')
+          }}
+          className="flex-1 h-11 border border-gray-300 bg-white text-gray-700 rounded-lg cursor-pointer hover:bg-gray-50 text-sm"
+        >
+          Cancelar
+        </button>
+        <button
+          onClick={handleExcluirViagem}
+          disabled={excluindoViagem}
+          className="flex-1 h-11 bg-red-500 text-white rounded-lg cursor-pointer hover:bg-red-600 text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          {excluindoViagem ? 'Excluindo...' : 'Confirmar'}
+        </button>
+      </div>
+    </div>
+  )
+)}
     </div>
   )
 }

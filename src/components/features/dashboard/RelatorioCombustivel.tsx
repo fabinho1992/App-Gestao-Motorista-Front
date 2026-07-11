@@ -107,6 +107,15 @@ export default function RelatorioCombustivel({ mes, ano }: RelatorioCombustivelP
           </span>
         </div>
 
+        {relatorio.totalLitrosAbastecidos > 0 && (
+          <div className="flex items-center justify-between mt-2">
+            <span className="text-xs text-gray-700">Total abastecido</span>
+            <span className="text-xs font-medium text-[#111827]">
+              {relatorio.totalLitrosAbastecidos.toFixed(2)} litros
+            </span>
+          </div>
+        )}
+
         {relatorio.mediaKmPorLitro > 0 && (
           <div className="flex items-center justify-between mt-2">
             <span className="text-sm text-gray-700">Média km/litro</span>
@@ -114,6 +123,12 @@ export default function RelatorioCombustivel({ mes, ano }: RelatorioCombustivelP
               {relatorio.mediaKmPorLitro.toFixed(1)} km/l
             </span>
           </div>
+        )}
+
+        {relatorio.totalLitrosAbastecidos === 0 && relatorio.mediaKmPorLitro === 0 && (
+          <p className="text-xs text-gray-400 italic mt-2">
+            Informe o preço por litro ao encerrar viagens para calcular a média
+          </p>
         )}
 
         <div className="flex items-center justify-between mt-2">

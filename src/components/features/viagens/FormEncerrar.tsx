@@ -18,6 +18,7 @@ export default function FormEncerrar({ viagemId, onSuccess, onCancel }: FormEnce
   const [form, setForm] = useState({
     kmFinal: '',
     gastoCombustivel: '',  // ← guarda só os números ex: "32312" = R$ 323,12
+    precoCombustivelLitro: '',
     gastoPedagio: '',
     gastoAlimentacao: '',
     gastoOutros: '',
@@ -54,6 +55,7 @@ export default function FormEncerrar({ viagemId, onSuccess, onCancel }: FormEnce
       const res = await encerrarViagem(viagemId, {
         kmFinal:          Number(form.kmFinal.replace(/\D/g, '')),
         gastoCombustivel: centavosParaNumero(form.gastoCombustivel),
+        precoCombustivelLitro: centavosParaNumero(form.precoCombustivelLitro),
         gastoPedagio:     centavosParaNumero(form.gastoPedagio),
         gastoAlimentacao: centavosParaNumero(form.gastoAlimentacao),
         gastoOutros:      centavosParaNumero(form.gastoOutros),
@@ -96,6 +98,20 @@ export default function FormEncerrar({ viagemId, onSuccess, onCancel }: FormEnce
           onChange={onChangeDinheiro('gastoCombustivel')}
           className="min-h-[44px]"
         />
+
+        <Input
+          label="Preço do combustível por litro (R$)"
+          name="precoCombustivelLitro"
+          type="text"
+          inputMode="decimal"
+          placeholder="Ex: 6,50"
+          value={formatarDinheiro(form.precoCombustivelLitro)}
+          onChange={onChangeDinheiro('precoCombustivelLitro')}
+          className="min-h-[44px]"
+        />
+        <p className="text-xs text-gray-400">
+          Informe o preço por litro para calcular a média km/litro
+        </p>
 
         <Input
           label="Gasto Pedágio (R$)"

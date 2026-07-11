@@ -6,7 +6,7 @@ import Card from '@/components/ui/Card'
 import Badge, { getStatusEntregaColor } from '@/components/ui/Badge'
 import FormConfirmar from '@/components/features/entregas/FormConfirmar'
 import FotoComprovante from '@/components/features/entregas/FotoComprovante'
-import { getEntregasPorViagem } from '@/lib/api'
+import { getEntregasPorViagem, excluirEntrega } from '@/lib/api'
 import type { Entrega } from '@/lib/api'
 import BackButton from '@/components/ui/BackButton'
 
@@ -18,6 +18,9 @@ export default function EntregaDetalhePage({ params }: { params: Promise<{ id: s
   const [entrega, setEntrega] = useState<Entrega | null>(null)
   const [loading, setLoading] = useState(true)
   const [erro, setErro] = useState('')
+  const [confirmandoExclusao, setConfirmandoExclusao] = useState(false)
+  const [excluindo, setExcluindo] = useState(false)
+  const [erroExclusao, setErroExclusao] = useState('')
 
   useEffect(() => {
     async function load() {
@@ -43,6 +46,25 @@ export default function EntregaDetalhePage({ params }: { params: Promise<{ id: s
     }
     load()
   }, [id, viagemId])
+
+  async function handleExcluirEntrega() {
+    setExcluindo(true)
+    setErroExclusao('')
+    try {
+      const res = await excluirEntrega(id)
+      if (res.isSuccess) {
+        router.push(`/viagens/${viagemId}`)
+      } else {
+        setErroExclusao(res.message)
+        setConfirmandoExclusao(false)
+      }
+    } catch {
+      setErroExclusao('Erro ao excluir entrega')
+      setConfirmandoExclusao(false)
+    } finally {
+      setExcluindo(false)
+    }
+  }
 
   if (loading) return <p className="text-sm text-[#6b7280] text-center py-8">Carregando...</p>
   if (erro) return <p className="text-sm text-red-600 text-center py-8">{erro}</p>
@@ -92,6 +114,42 @@ export default function EntregaDetalhePage({ params }: { params: Promise<{ id: s
           entregaId={entrega.id}
           onSuccess={() => router.push(`/viagens/${viagemId}`)}
         />
+      )}
+
+      {entrega.status === 'Pendente' && (
+        !confirmandoExclusao ? (
+          <button
+            onClick={() => setConfirmandoExclusao(true)}
+            className="border border-red-300 text-red-500 w-full h-11 rounded-lg cursor-pointer hover:bg-red-50 text-sm mt-2"
+          >
+            Excluir entrega
+          </button>
+        ) : (
+          <div className="bg-red-50 border border-red-200 rounded-lg p-3 mt-2">
+            <p className="text-sm text-red-700 text-center mb-3">
+              Tem certeza? Esta ação não pode ser desfeita.
+            </p>
+            {erroExclusao && <p className="text-sm text-red-600 mb-2">{erroExclusao}</p>}
+            <div className="flex gap-2">
+              <button
+                onClick={() => {
+                  setConfirmandoExclusao(false)
+                  setErroExclusao('')
+                }}
+                className="flex-1 h-11 border border-gray-300 bg-white text-gray-700 rounded-lg cursor-pointer hover:bg-gray-50 text-sm"
+              >
+                Cancelar
+              </button>
+              <button
+                onClick={handleExcluirEntrega}
+                disabled={excluindo}
+                className="flex-1 h-11 bg-red-500 text-white rounded-lg cursor-pointer hover:bg-red-600 text-sm disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {excluindo ? 'Excluindo...' : 'Confirmar'}
+              </button>
+            </div>
+          </div>
+        )
       )}
     </div>
   )

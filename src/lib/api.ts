@@ -146,6 +146,7 @@ export interface Viagem {
   gastoPedagio: number
   gastoAlimentacao: number
   gastoOutros: number
+  entregas: Entrega[] 
   obsEncerramento: string | null
   saldoLiquido: number
 }
@@ -170,6 +171,7 @@ export interface EncerrarViagemRequest {
   gastoAlimentacao: number
   gastoOutros: number
   obsEncerramento: string
+  precoCombustivelLitro?: number
 }
 
 // Entrega DTOs
@@ -290,6 +292,7 @@ export interface RelatorioCombustivelDto {
   totalGastosGeral: number
   totalKmRodado: number
   mediaKmPorLitro: number
+  totalLitrosAbastecidos: number
   totalViagensEncerradas: number
   viagens: DetalheCombustivelDto[]
 }
@@ -427,5 +430,17 @@ export async function registrarFalhaEntrega(id: string, motivo: string) {
   return request<Entrega>(`/api/v1/entrega/${id}/falha`, {
     method: 'PUT',
     body: JSON.stringify({ motivo }),
+  })
+}
+
+export async function excluirEntrega(id: string) {
+  return request<void>(`/api/v1/entrega/${id}`, {
+    method: 'DELETE',
+  })
+}
+
+export async function excluirViagem(id: string) {
+  return request<void>(`/api/v1/viagem/${id}`, {
+    method: 'DELETE',
   })
 }
