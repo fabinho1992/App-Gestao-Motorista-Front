@@ -179,7 +179,7 @@ export default function DashboardPage() {
           </div>
 
           <Link
-            href="/viagens?status=Encerrada"
+            href="/viagens?status=Encerrada&statusPagamento=Pendente"
             className="block text-xs text-amber-700 underline cursor-pointer mt-3"
           >
             Ver viagens pendentes

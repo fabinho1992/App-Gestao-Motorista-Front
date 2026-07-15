@@ -26,6 +26,7 @@ export default function RegistrarPage() {
   })
 
   function onChange(e: React.ChangeEvent<HTMLInputElement>) {
+    setErro('')
     setForm({ ...form, [e.target.name]: e.target.value })
   }
 
@@ -34,6 +35,42 @@ export default function RegistrarPage() {
     const { nome, email, cpf, telefone, cnh, vencimentoCnh, senha } = form
     if (!nome || !email || !cpf || !telefone || !cnh || !vencimentoCnh || !senha) {
       setErro('Preencha todos os campos')
+      return
+    }
+    if (!form.nome || form.nome.trim().length < 3) {
+      setErro('Nome deve ter pelo menos 3 caracteres.')
+      return
+    }
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+    if (!form.email || !emailRegex.test(form.email)) {
+      setErro('Email inválido.')
+      return
+    }
+    const cpfNumeros = form.cpf.replace(/\D/g, '')
+    if (cpfNumeros.length !== 11) {
+      setErro('CPF deve ter 11 dígitos.')
+      return
+    }
+    const telefoneNumeros = form.telefone.replace(/\D/g, '')
+    if (telefoneNumeros.length < 10) {
+      setErro('Telefone inválido. Informe DDD + número.')
+      return
+    }
+    if (!form.cnh || form.cnh.trim().length === 0) {
+      setErro('CNH é obrigatória.')
+      return
+    }
+    if (form.vencimentoCnh) {
+      const vencimento = new Date(form.vencimentoCnh)
+      const hoje = new Date()
+      hoje.setHours(0, 0, 0, 0)
+      if (vencimento < hoje) {
+        setErro('CNH vencida. Informe uma CNH com validade futura.')
+        return
+      }
+    }
+    if (!form.senha || form.senha.length < 6) {
+      setErro('Senha deve ter pelo menos 6 caracteres.')
       return
     }
     setLoading(true)
@@ -70,8 +107,8 @@ export default function RegistrarPage() {
         <form onSubmit={onSubmit} className="flex flex-col gap-3">
           <Input label="Nome completo" name="nome" placeholder="Seu nome" value={form.nome} onChange={onChange} />
           <Input label="Email" name="email" type="email" placeholder="seu@email.com" value={form.email} onChange={onChange} />
-          <Input label="CPF" name="cpf" placeholder="000.000.000-00" inputMode="numeric" value={formatarCpf(form.cpf)} onChange={(e) => setForm({ ...form, cpf: parsearCpf(e.target.value) })} />
-          <Input label="Telefone" name="telefone" placeholder="(00) 00000-0000" inputMode="numeric" value={formatarTelefone(form.telefone)} onChange={(e) => setForm({ ...form, telefone: parsearTelefone(e.target.value) })} />
+          <Input label="CPF" name="cpf" placeholder="000.000.000-00" inputMode="numeric" value={formatarCpf(form.cpf)} onChange={(e) => { setErro(''); setForm({ ...form, cpf: parsearCpf(e.target.value) }) }} />
+          <Input label="Telefone" name="telefone" placeholder="(00) 00000-0000" inputMode="numeric" value={formatarTelefone(form.telefone)} onChange={(e) => { setErro(''); setForm({ ...form, telefone: parsearTelefone(e.target.value) }) }} />
           <Input label="CNH" name="cnh" placeholder="Número da CNH" value={form.cnh} onChange={onChange} />
           <Input label="Vencimento CNH" name="vencimentoCnh" type="date" value={form.vencimentoCnh} onChange={onChange} />
           <div className="flex flex-col gap-1">

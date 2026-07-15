@@ -40,6 +40,8 @@ export default function RelatorioContent() {
   const [erro, setErro] = useState('')
   const [viagemAbertaIndex, setViagemAbertaIndex] = useState<number | null>(null)
   const [gerandoPdf, setGerandoPdf] = useState(false)
+  const [paginaViagens, setPaginaViagens] = useState(1)
+  const itensPorPagina = 5
 
   const load = useCallback(async () => {
     setLoading(true)
@@ -75,6 +77,10 @@ export default function RelatorioContent() {
     load()
   }, [load])
 
+  useEffect(() => {
+    setPaginaViagens(1)
+  }, [mes, ano])
+
   const isNoMesAtual = mes === mesAtual && ano === anoAtual
 
   function mesAnterior() {
@@ -99,6 +105,14 @@ export default function RelatorioContent() {
   function toggleViagem(index: number) {
     setViagemAbertaIndex((atual) => (atual === index ? null : index))
   }
+
+  const totalViagens = relatorio?.viagens?.length ?? 0
+  const totalPaginas = Math.ceil(totalViagens / itensPorPagina)
+
+  const viagensPaginaAtual = relatorio?.viagens?.slice(
+    (paginaViagens - 1) * itensPorPagina,
+    paginaViagens * itensPorPagina
+  ) ?? []
 
   return (
     <div>
@@ -252,7 +266,9 @@ export default function RelatorioContent() {
 
           <div>
             <p className="text-sm font-semibold mt-4 mb-2">
-              Detalhes por viagem ({relatorio.totalViagensEncerradas})
+              {totalPaginas > 1
+                ? `Detalhes por viagem (${totalViagens}) — mostrando ${viagensPaginaAtual.length} de ${totalViagens}`
+                : `Detalhes por viagem (${totalViagens})`}
             </p>
 
             {relatorio.totalViagensEncerradas === 0 ? (
@@ -260,8 +276,10 @@ export default function RelatorioContent() {
                 Nenhuma viagem encerrada em {relatorio.nomeMes}
               </p>
             ) : (
+              <>
               <div className="flex flex-col gap-2">
-                {relatorio.viagens.map((viagem, index) => {
+                {viagensPaginaAtual.map((viagem, indexPagina) => {
+                  const index = (paginaViagens - 1) * itensPorPagina + indexPagina
                   const aberta = viagemAbertaIndex === index
                   return (
                     <div key={viagem.viagemId}>
@@ -360,6 +378,39 @@ export default function RelatorioContent() {
                   )
                 })}
               </div>
+
+              {totalPaginas > 1 && (
+                <div className="flex items-center justify-between mt-4 px-1">
+                  <button
+                    type="button"
+                    disabled={paginaViagens === 1}
+                    onClick={() => setPaginaViagens(paginaViagens - 1)}
+                    className="flex items-center gap-1 px-3 py-2 min-h-[44px] rounded-lg text-sm border border-gray-200 cursor-pointer hover:bg-gray-50 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                  >
+                    <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth={2} className="w-4 h-4">
+                      <path d="M13 5l-5 5 5 5" />
+                    </svg>
+                    Anterior
+                  </button>
+
+                  <span className="text-sm text-gray-500">
+                    Página {paginaViagens} de {totalPaginas}
+                  </span>
+
+                  <button
+                    type="button"
+                    disabled={paginaViagens === totalPaginas}
+                    onClick={() => setPaginaViagens(paginaViagens + 1)}
+                    className="flex items-center gap-1 px-3 py-2 min-h-[44px] rounded-lg text-sm border border-gray-200 cursor-pointer hover:bg-gray-50 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                  >
+                    Próxima
+                    <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth={2} className="w-4 h-4">
+                      <path d="M7 5l5 5-5 5" />
+                    </svg>
+                  </button>
+                </div>
+              )}
+              </>
             )}
           </div>
         </div>

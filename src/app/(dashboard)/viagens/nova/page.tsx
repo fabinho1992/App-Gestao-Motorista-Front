@@ -57,10 +57,12 @@ export default function NovaViagemPage() {
   function onChange(
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>,
   ) {
+    setErro("");
     setForm({ ...form, [e.target.name]: e.target.value });
   }
 
   function onChangeVeiculo(e: React.ChangeEvent<HTMLSelectElement>) {
+    setErro("");
     const veiculoSelecionado = veiculos.find((v) => v.id === e.target.value);
     setForm({
       ...form,
@@ -81,6 +83,28 @@ export default function NovaViagemPage() {
       !form.valorFrete
     ) {
       setErro("Preencha todos os campos obrigatórios");
+      return;
+    }
+    if (!form.veiculoId) {
+      setErro("Selecione um veículo.");
+      return;
+    }
+    if (!form.origem || form.origem.trim().length === 0) {
+      setErro("Origem é obrigatória.");
+      return;
+    }
+    if (!form.empresaContratante || form.empresaContratante.trim().length === 0) {
+      setErro("Empresa contratante é obrigatória.");
+      return;
+    }
+    const kmInicialNumerico = Number(form.kmInicial);
+    if (kmInicialNumerico < 0) {
+      setErro("Km inicial não pode ser negativo.");
+      return;
+    }
+    const valorFreteNumerico = parsearDinheiro(form.valorFrete);
+    if (!valorFreteNumerico || valorFreteNumerico <= 0) {
+      setErro("Valor do frete deve ser maior que zero.");
       return;
     }
     setLoading(true);
@@ -189,6 +213,7 @@ export default function NovaViagemPage() {
           placeholder="0,00"
           value={formatarDinheiro(form.valorFrete)}
           onChange={(e) => {
+            setErro("");
             // extrai só os números do que foi digitado
             const apenasNumeros = e.target.value.replace(/\D/g, "");
             setForm({ ...form, valorFrete: apenasNumeros });

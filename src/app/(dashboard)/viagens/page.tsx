@@ -1,7 +1,8 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, Suspense } from 'react'
 import Link from 'next/link'
+import { useSearchParams } from 'next/navigation'
 import ViagemCard from '@/components/features/viagens/ViagemCard'
 import { getViagens, getEmpresasDistintas } from '@/lib/api'
 import type { Viagem } from '@/lib/api'
@@ -10,6 +11,15 @@ import BackButton from '@/components/ui/BackButton'
 const filtros = ['Todos', 'EmRota', 'Encerrada']
 
 export default function ViagensPage() {
+  return (
+    <Suspense fallback={<p className="text-sm text-[#6b7280] text-center py-8">Carregando...</p>}>
+      <ViagensContent />
+    </Suspense>
+  )
+}
+
+function ViagensContent() {
+  const searchParams = useSearchParams()
   const [viagens, setViagens] = useState<Viagem[]>([])
   const [status, setStatus] = useState('Todos')
   const [page, setPage] = useState(1)
@@ -21,6 +31,15 @@ export default function ViagensPage() {
   const [empresaFiltro, setEmpresaFiltro] = useState('')
   const [empresasSugestoes, setEmpresasSugestoes] = useState<string[]>([])
   const [mostrarSugestoes, setMostrarSugestoes] = useState(false)
+  const [statusPagamento, setStatusPagamento] = useState('')
+
+  useEffect(() => {
+    const statusParam = searchParams.get('status')
+    const spParam = searchParams.get('statusPagamento')
+    if (statusParam) setStatus(statusParam)
+    if (spParam) setStatusPagamento(spParam)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   useEffect(() => {
     async function loadEmpresas() {
@@ -39,7 +58,7 @@ export default function ViagensPage() {
       setLoading(true)
       setErro('')
       try {
-        const res = await getViagens(status, dataInicio || undefined, dataFim || undefined, empresaFiltro || undefined, page, 5)
+        const res = await getViagens(status, dataInicio || undefined, dataFim || undefined, empresaFiltro || undefined, statusPagamento || undefined, page, 5)
         if (res.isSuccess) {
           setViagens(res.data)
           setTotalPages(res.totalPage || 1)
@@ -55,10 +74,15 @@ export default function ViagensPage() {
       }
     }
     load()
-  }, [status, dataInicio, dataFim, empresaFiltro, page])
+  }, [status, dataInicio, dataFim, empresaFiltro, statusPagamento, page])
 
   function changeFilter(f: string) {
     setStatus(f)
+    setPage(1)
+  }
+
+  function changeStatusPagamento(sp: string) {
+    setStatusPagamento(sp)
     setPage(1)
   }
 
@@ -83,6 +107,52 @@ export default function ViagensPage() {
             {f === 'EmRota' ? 'Em Rota' : f}
           </button>
         ))}
+      </div>
+
+      <div className="flex flex-col gap-1">
+        <label className="text-xs text-gray-500 mb-1">Pagamento</label>
+        <div className="flex gap-2">
+          <button
+            onClick={() => changeStatusPagamento('')}
+            className={`px-3 py-1.5 rounded-lg text-sm cursor-pointer transition-colors ${
+              statusPagamento === ''
+                ? 'bg-[#534AB7] text-white border border-[#534AB7]'
+                : 'border border-gray-200 text-gray-600 hover:bg-gray-50'
+            }`}
+          >
+            Todos os pagamentos
+          </button>
+          <button
+            onClick={() => changeStatusPagamento('Pendente')}
+            className={`px-3 py-1.5 rounded-lg text-sm cursor-pointer transition-colors ${
+              statusPagamento === 'Pendente'
+                ? 'bg-yellow-100 text-yellow-800 border border-yellow-300'
+                : 'border border-gray-200 text-gray-600 hover:bg-gray-50'
+            }`}
+          >
+            Pendente
+          </button>
+          <button
+            onClick={() => changeStatusPagamento('Pago')}
+            className={`px-3 py-1.5 rounded-lg text-sm cursor-pointer transition-colors ${
+              statusPagamento === 'Pago'
+                ? 'bg-green-100 text-green-800 border border-green-300'
+                : 'border border-gray-200 text-gray-600 hover:bg-gray-50'
+            }`}
+          >
+            Pago
+          </button>
+          <button
+            onClick={() => changeStatusPagamento('Cancelado')}
+            className={`px-3 py-1.5 rounded-lg text-sm cursor-pointer transition-colors ${
+              statusPagamento === 'Cancelado'
+                ? 'bg-red-100 text-red-800 border border-red-300'
+                : 'border border-gray-200 text-gray-600 hover:bg-gray-50'
+            }`}
+          >
+            Cancelado
+          </button>
+        </div>
       </div>
 
       <div className="flex gap-2 mt-2">
@@ -144,9 +214,9 @@ export default function ViagensPage() {
         </div>
       </div>
 
-      {(dataInicio || dataFim || empresaFiltro) && (
+      {(dataInicio || dataFim || empresaFiltro || statusPagamento) && (
         <button
-          onClick={() => { setDataInicio(''); setDataFim(''); setEmpresaFiltro(''); setPage(1) }}
+          onClick={() => { setStatus('Todos'); setDataInicio(''); setDataFim(''); setEmpresaFiltro(''); setStatusPagamento(''); setPage(1) }}
           className="text-sm text-purple-700 underline cursor-pointer"
         >
           Limpar filtros de data

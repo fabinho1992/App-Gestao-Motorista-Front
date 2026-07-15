@@ -153,7 +153,7 @@ export default function PerfilPage() {
 
       <p className="text-sm font-semibold text-red-600 mb-2">Zona de perigo</p>
       <p className="text-xs text-gray-500 mb-3">
-        Esta ação irá deletar permanentemente todas as suas viagens, entregas e veículos cadastrados. Seus dados de acesso serão mantidos.
+        Esta ação irá deletar permanentemente todas as suas viagens, entregas e veículos cadastrados. Seus dados de acesso e perfil serão mantidos.
       </p>
 
       {etapaReset === 'idle' && (
@@ -178,6 +178,7 @@ export default function PerfilPage() {
             <li>Todos os veículos serão deletados</li>
             <li>Esta ação NÃO pode ser desfeita</li>
             <li>Você será desconectado após o reset</li>
+            <li>Seus dados de acesso e perfil serão mantidos</li>
           </ul>
           <div className="flex gap-2">
             <button

@@ -292,6 +292,7 @@ export default function ViagemDetalhePage({ params }: { params: Promise<{ id: st
       {showEncerrar && (
         <FormEncerrar
           viagemId={id}
+          kmInicial={viagem.kmInicial}
           onSuccess={handleEncerrarSuccess}
           onCancel={() => setShowEncerrar(false)}
         />

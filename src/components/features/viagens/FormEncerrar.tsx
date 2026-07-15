@@ -4,15 +4,16 @@ import { useState } from 'react'
 import Input from '@/components/ui/Input'
 import Button from '@/components/ui/Button'
 import { encerrarViagem } from '@/lib/api'
-import { formatarNumero, parsearNumero, formatarDinheiro } from '@/lib/masks'
+import { formatarNumero, parsearNumero, formatarDinheiro, parsearDinheiro } from '@/lib/masks'
 
 interface FormEncerrarProps {
   viagemId: string
+  kmInicial: number
   onSuccess: () => void
   onCancel: () => void
 }
 
-export default function FormEncerrar({ viagemId, onSuccess, onCancel }: FormEncerrarProps) {
+export default function FormEncerrar({ viagemId, kmInicial, onSuccess, onCancel }: FormEncerrarProps) {
   const [loading, setLoading] = useState(false)
   const [erro, setErro] = useState('')
   const [form, setForm] = useState({
@@ -26,12 +27,14 @@ export default function FormEncerrar({ viagemId, onSuccess, onCancel }: FormEnce
   })
 
   function onChange(e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) {
+    setErro('')
     setForm({ ...form, [e.target.name]: e.target.value })
   }
 
   // extrai só números do input de dinheiro
   function onChangeDinheiro(campo: string) {
     return (e: React.ChangeEvent<HTMLInputElement>) => {
+      setErro('')
       const apenasNumeros = e.target.value.replace(/\D/g, '')
       setForm({ ...form, [campo]: apenasNumeros })
     }
@@ -45,8 +48,26 @@ export default function FormEncerrar({ viagemId, onSuccess, onCancel }: FormEnce
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault()
-    if (!form.kmFinal) {
-      setErro('Km final é obrigatório')
+    if (!form.kmFinal || form.kmFinal === '0') {
+      setErro('Km final é obrigatório.')
+      return
+    }
+    const kmFinalNumerico = parsearNumero(form.kmFinal)
+    if (kmFinalNumerico < kmInicial) {
+      setErro(`Km final não pode ser menor que o km inicial (${kmInicial.toLocaleString('pt-BR')} km).`)
+      return
+    }
+    const combustivel = parsearDinheiro(form.gastoCombustivel)
+    const pedagio = parsearDinheiro(form.gastoPedagio)
+    const alimentacao = parsearDinheiro(form.gastoAlimentacao)
+    const outros = parsearDinheiro(form.gastoOutros)
+    if (combustivel < 0 || pedagio < 0 || alimentacao < 0 || outros < 0) {
+      setErro('Os valores de gastos não podem ser negativos.')
+      return
+    }
+    const precoPorLitro = parsearDinheiro(form.precoCombustivelLitro || '0')
+    if (precoPorLitro < 0) {
+      setErro('Preço do combustível por litro não pode ser negativo.')
       return
     }
     setLoading(true)
@@ -84,7 +105,7 @@ export default function FormEncerrar({ viagemId, onSuccess, onCancel }: FormEnce
           type="text"
           inputMode="numeric"
           value={formatarNumero(form.kmFinal)}
-          onChange={(e) => setForm({ ...form, kmFinal: String(parsearNumero(e.target.value)) })}
+          onChange={(e) => { setErro(''); setForm({ ...form, kmFinal: String(parsearNumero(e.target.value)) }) }}
           className="min-h-[44px]"
         />
 

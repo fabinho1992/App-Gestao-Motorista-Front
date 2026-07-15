@@ -151,6 +151,8 @@ export interface Viagem {
   saldoLiquido: number
 }
 
+export type StatusPagamento = 'Pendente' | 'Pago' | 'Cancelado'
+
 export interface AtualizarStatusPagamentoRequest {
   novoStatus: 'Pendente' | 'Pago' | 'Cancelado'
 }
@@ -354,6 +356,7 @@ export async function getViagens(
   dataInicio?: string,
   dataFim?: string,
   empresaContratante?: string,
+  statusPagamento?: string,
   pageNumber = 1,
   pageSize = 10
 ) {
@@ -364,6 +367,7 @@ export async function getViagens(
   if (dataInicio) url += `&dataInicio=${dataInicio}`
   if (dataFim) url += `&dataFim=${dataFim}`
   if (empresaContratante) url += `&empresaContratante=${empresaContratante}`
+  if (statusPagamento) url += `&statusPagamento=${statusPagamento}`
   return request<Viagem[]>(url)
 }
 

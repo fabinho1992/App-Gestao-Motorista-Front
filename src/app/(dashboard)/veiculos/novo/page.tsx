@@ -26,6 +26,7 @@ export default function NovoVeiculoPage() {
   })
 
   function onChange(e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) {
+    setErro('')
     setForm({ ...form, [e.target.name]: e.target.value })
   }
 
@@ -34,6 +35,47 @@ export default function NovoVeiculoPage() {
     if (!form.placa || !form.modelo || !form.ano || !form.kmAtual) {
       setErro('Preencha os campos obrigatórios')
       return
+    }
+    if (!form.placa || form.placa.trim().length === 0) {
+      setErro('Placa é obrigatória.')
+      return
+    }
+    if (!form.modelo || form.modelo.trim().length === 0) {
+      setErro('Modelo é obrigatório.')
+      return
+    }
+    const anoAtual = new Date().getFullYear()
+    const anoNumerico = Number(form.ano)
+    if (!form.ano || anoNumerico < 1950 || anoNumerico > anoAtual + 1) {
+      setErro(`Ano inválido. Informe um ano entre 1950 e ${anoAtual + 1}.`)
+      return
+    }
+    const kmAtualNumerico = Number(form.kmAtual)
+    if (kmAtualNumerico < 0) {
+      setErro('Km atual não pode ser negativo.')
+      return
+    }
+    const kmUltimoOleoNumerico = Number(form.kmUltimoOleo) || 0
+    if (kmUltimoOleoNumerico > kmAtualNumerico) {
+      setErro('Km do último óleo não pode ser maior que o km atual.')
+      return
+    }
+    if (kmUltimoOleoNumerico < 0) {
+      setErro('Km do último óleo não pode ser negativo.')
+      return
+    }
+    if (!form.intervaloOleo || form.intervaloOleo <= 0) {
+      setErro('Intervalo de troca de óleo deve ser maior que zero.')
+      return
+    }
+    if (form.dataUltimoOleo) {
+      const dataOleo = new Date(form.dataUltimoOleo)
+      const hoje = new Date()
+      hoje.setHours(0, 0, 0, 0)
+      if (dataOleo > hoje) {
+        setErro('Data do último óleo não pode ser uma data futura.')
+        return
+      }
     }
     setLoading(true)
     setErro('')
@@ -84,9 +126,9 @@ export default function NovoVeiculoPage() {
           </select>
         </div>
 
-        <Input label="Km atual *" name="kmAtual" type="text" inputMode="numeric" value={formatarNumero(form.kmAtual)} onChange={(e) => setForm({ ...form, kmAtual: String(parsearNumero(e.target.value)) })} className="min-h-[44px]" />
-        <Input label="Km último óleo" name="kmUltimoOleo" type="text" inputMode="numeric" value={formatarNumero(form.kmUltimoOleo)} onChange={(e) => setForm({ ...form, kmUltimoOleo: String(parsearNumero(e.target.value)) })} className="min-h-[44px]" />
-        <Input label="Intervalo de troca de óleo (km)" name="intervaloOleo" type="text" inputMode="numeric" value={formatarNumero(form.intervaloOleo)} onChange={(e) => setForm({ ...form, intervaloOleo: parsearNumero(e.target.value) })} className="min-h-[44px]" />
+        <Input label="Km atual *" name="kmAtual" type="text" inputMode="numeric" value={formatarNumero(form.kmAtual)} onChange={(e) => { setErro(''); setForm({ ...form, kmAtual: String(parsearNumero(e.target.value)) }) }} className="min-h-[44px]" />
+        <Input label="Km último óleo" name="kmUltimoOleo" type="text" inputMode="numeric" value={formatarNumero(form.kmUltimoOleo)} onChange={(e) => { setErro(''); setForm({ ...form, kmUltimoOleo: String(parsearNumero(e.target.value)) }) }} className="min-h-[44px]" />
+        <Input label="Intervalo de troca de óleo (km)" name="intervaloOleo" type="text" inputMode="numeric" value={formatarNumero(form.intervaloOleo)} onChange={(e) => { setErro(''); setForm({ ...form, intervaloOleo: parsearNumero(e.target.value) }) }} className="min-h-[44px]" />
 
         <Input label="Data último óleo" name="dataUltimoOleo" type="date" value={form.dataUltimoOleo} onChange={onChange} />
 
