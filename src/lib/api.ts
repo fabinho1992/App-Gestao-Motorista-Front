@@ -448,3 +448,44 @@ export async function excluirViagem(id: string) {
     method: 'DELETE',
   })
 }
+
+// Manutencao DTOs
+export interface ManutencaoDto {
+  id: string
+  tipo: string
+  descricao?: string
+  dataRealizacao: string
+  kmRealizacao: number
+  custo: number
+  observacao?: string
+}
+
+export interface RegistrarManutencaoRequest {
+  veiculoId: string
+  tipo: string
+  descricao?: string
+  dataRealizacao: string
+  kmRealizacao: number
+  custo: number
+  observacao?: string
+}
+
+// Manutencao
+export async function getManutencoes(veiculoId: string) {
+  return request<ManutencaoDto[]>(
+    `/api/v1/manutencao/veiculo/${veiculoId}`
+  )
+}
+
+export async function registrarManutencao(data: RegistrarManutencaoRequest) {
+  return request<string>('/api/v1/manutencao', {
+    method: 'POST',
+    body: JSON.stringify(data)
+  })
+}
+
+export async function excluirManutencao(id: string) {
+  return request<void>(`/api/v1/manutencao/${id}`, {
+    method: 'DELETE'
+  })
+}

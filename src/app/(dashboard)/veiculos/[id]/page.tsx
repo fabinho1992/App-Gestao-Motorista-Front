@@ -7,10 +7,43 @@ import Card from '@/components/ui/Card'
 import Badge, { getStatusViagemColor } from '@/components/ui/Badge'
 import Button from '@/components/ui/Button'
 import BackButton from '@/components/ui/BackButton'
-import { getVeiculoDetalhes, trocarOleoVeiculo, deletarVeiculo } from '@/lib/api'
-import type { VeiculoComAlerta } from '@/lib/api'
+import {
+  getVeiculoDetalhes,
+  trocarOleoVeiculo,
+  deletarVeiculo,
+  getManutencoes,
+  registrarManutencao,
+  excluirManutencao,
+} from '@/lib/api'
+import type { VeiculoComAlerta, ManutencaoDto } from '@/lib/api'
+import { formatarNumero, parsearNumero, formatarDinheiro, parsearDinheiro } from '@/lib/masks'
 
 const POR_PAGINA = 5
+
+const TIPOS_MANUTENCAO = [
+  { valor: 'Oleo', label: 'Óleo' },
+  { valor: 'Revisao', label: 'Revisão' },
+  { valor: 'Freios', label: 'Freios' },
+  { valor: 'Filtros', label: 'Filtros' },
+  { valor: 'Outro', label: 'Outro' },
+]
+
+const BADGE_TIPO_MANUTENCAO: Record<string, string> = {
+  Oleo: 'bg-blue-100 text-blue-800',
+  Revisao: 'bg-purple-100 text-purple-800',
+  Freios: 'bg-red-100 text-red-800',
+  Filtros: 'bg-green-100 text-green-800',
+  Outro: 'bg-gray-100 text-gray-700',
+}
+
+function labelTipoManutencao(tipo: string): string {
+  return TIPOS_MANUTENCAO.find((t) => t.valor === tipo)?.label ?? tipo
+}
+
+function formatarDataManutencao(data: string): string {
+  const [ano, mes, dia] = data.split('T')[0].split('-')
+  return `${dia}/${mes}/${ano}`
+}
 
 export default function VeiculoDetalhePage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params)
@@ -24,11 +57,27 @@ export default function VeiculoDetalhePage({ params }: { params: Promise<{ id: s
   const [excluindo, setExcluindo] = useState(false)
   const [erroExclusao, setErroExclusao] = useState('')
 
+  const [manutencoes, setManutencoes] = useState<ManutencaoDto[]>([])
+  const [showFormManutencao, setShowFormManutencao] = useState(false)
+  const [salvandoManutencao, setSalvandoManutencao] = useState(false)
+  const [erroManutencao, setErroManutencao] = useState('')
+  const [formManutencao, setFormManutencao] = useState({
+    tipo: 'Oleo',
+    descricao: '',
+    dataRealizacao: '',
+    kmRealizacao: '',
+    custo: '',
+    observacao: ''
+  })
+
   async function loadVeiculo() {
     try {
       const res = await getVeiculoDetalhes(id)
       if (res.isSuccess) setVeiculo(res.data)
       else setErro(res.message)
+
+      const resManutencoes = await getManutencoes(id)
+      if (resManutencoes.isSuccess) setManutencoes(resManutencoes.data)
     } catch {
       setErro('Erro ao carregar veículo')
     } finally {
@@ -68,6 +117,61 @@ export default function VeiculoDetalhePage({ params }: { params: Promise<{ id: s
       setErroExclusao('Erro ao excluir veículo')
     } finally {
       setExcluindo(false)
+    }
+  }
+
+  async function handleRegistrarManutencao(e: React.FormEvent) {
+    e.preventDefault()
+    if (!formManutencao.dataRealizacao) {
+      setErroManutencao('Data de realização é obrigatória.')
+      return
+    }
+    if (!formManutencao.kmRealizacao) {
+      setErroManutencao('Km de realização é obrigatório.')
+      return
+    }
+    setSalvandoManutencao(true)
+    setErroManutencao('')
+    try {
+      const res = await registrarManutencao({
+        veiculoId: id,
+        tipo: formManutencao.tipo,
+        descricao: formManutencao.descricao || undefined,
+        dataRealizacao: formManutencao.dataRealizacao,
+        kmRealizacao: parsearNumero(formManutencao.kmRealizacao),
+        custo: parsearDinheiro(formManutencao.custo),
+        observacao: formManutencao.observacao || undefined
+      })
+      if (res.isSuccess) {
+        const resManutencoes = await getManutencoes(id)
+        if (resManutencoes.isSuccess) setManutencoes(resManutencoes.data)
+        setShowFormManutencao(false)
+        setFormManutencao({
+          tipo: 'Oleo', descricao: '', dataRealizacao: '',
+          kmRealizacao: '', custo: '', observacao: ''
+        })
+        if (formManutencao.tipo === 'Oleo') {
+          const resVeiculo = await getVeiculoDetalhes(id)
+          if (resVeiculo.isSuccess) setVeiculo(resVeiculo.data)
+        }
+      } else {
+        setErroManutencao(res.message)
+      }
+    } catch {
+      setErroManutencao('Erro ao registrar manutenção.')
+    } finally {
+      setSalvandoManutencao(false)
+    }
+  }
+
+  async function handleExcluirManutencao(manutencaoId: string) {
+    try {
+      const res = await excluirManutencao(manutencaoId)
+      if (res.isSuccess) {
+        setManutencoes(prev => prev.filter(m => m.id !== manutencaoId))
+      }
+    } catch {
+      console.error('Erro ao excluir manutenção')
     }
   }
 
@@ -160,6 +264,158 @@ export default function VeiculoDetalhePage({ params }: { params: Promise<{ id: s
           Registrar troca de óleo
         </Button>
       )}
+
+      {/* SEÇÃO — MANUTENÇÕES */}
+      <div className="mt-2">
+        <div className="flex justify-between items-center mb-3">
+          <h2 className="text-sm font-semibold text-gray-700">Manutenções</h2>
+          <button
+            type="button"
+            onClick={() => setShowFormManutencao(true)}
+            className="text-sm text-[#534AB7] border border-[#534AB7] px-3 py-1.5 rounded-lg cursor-pointer hover:bg-purple-50 min-h-[36px]"
+          >
+            + Registrar
+          </button>
+        </div>
+
+        {showFormManutencao && (
+          <div className="border border-gray-200 rounded-xl p-4 mb-3">
+            <form onSubmit={handleRegistrarManutencao} className="flex flex-col gap-3">
+              <div>
+                <label className="text-xs text-gray-500 mb-2 block">Tipo de manutenção</label>
+                <div className="flex gap-2 flex-wrap">
+                  {TIPOS_MANUTENCAO.map((t) => (
+                    <span
+                      key={t.valor}
+                      onClick={() => setFormManutencao({ ...formManutencao, tipo: t.valor })}
+                      className={`cursor-pointer px-3 py-1.5 rounded-full text-xs font-medium ${
+                        formManutencao.tipo === t.valor
+                          ? 'bg-[#534AB7] text-white'
+                          : 'bg-gray-100 text-gray-600'
+                      }`}
+                    >
+                      {t.label}
+                    </span>
+                  ))}
+                </div>
+              </div>
+
+              <div className="flex flex-col gap-1">
+                <label className="text-xs text-gray-500">Data</label>
+                <input
+                  type="date"
+                  required
+                  value={formManutencao.dataRealizacao}
+                  onChange={(e) => setFormManutencao({ ...formManutencao, dataRealizacao: e.target.value })}
+                  className="px-3 py-2.5 rounded-lg border border-[#e5e7eb] bg-white text-sm focus:outline-none focus:ring-2 focus:ring-[#534AB7]"
+                />
+              </div>
+
+              <div className="flex flex-col gap-1">
+                <label className="text-xs text-gray-500">Km</label>
+                <input
+                  type="text"
+                  inputMode="numeric"
+                  value={formatarNumero(formManutencao.kmRealizacao)}
+                  onChange={(e) =>
+                    setFormManutencao({ ...formManutencao, kmRealizacao: String(parsearNumero(e.target.value)) })
+                  }
+                  className="px-3 py-2.5 rounded-lg border border-[#e5e7eb] bg-white text-sm focus:outline-none focus:ring-2 focus:ring-[#534AB7]"
+                />
+              </div>
+
+              <div className="flex flex-col gap-1">
+                <label className="text-xs text-gray-500">Custo (R$)</label>
+                <input
+                  type="text"
+                  inputMode="numeric"
+                  placeholder="0,00"
+                  value={formatarDinheiro(formManutencao.custo)}
+                  onChange={(e) =>
+                    setFormManutencao({ ...formManutencao, custo: e.target.value.replace(/\D/g, '') })
+                  }
+                  className="px-3 py-2.5 rounded-lg border border-[#e5e7eb] bg-white text-sm focus:outline-none focus:ring-2 focus:ring-[#534AB7]"
+                />
+              </div>
+
+              <div className="flex flex-col gap-1">
+                <label className="text-xs text-gray-500">Observação (opcional)</label>
+                <textarea
+                  rows={2}
+                  placeholder="Ex: Óleo 15W40 Shell Helix"
+                  value={formManutencao.observacao}
+                  onChange={(e) => setFormManutencao({ ...formManutencao, observacao: e.target.value })}
+                  className="px-3 py-2.5 rounded-lg border border-[#e5e7eb] bg-white text-sm focus:outline-none focus:ring-2 focus:ring-[#534AB7]"
+                />
+              </div>
+
+              {erroManutencao && <p className="text-sm text-red-600 mt-1">{erroManutencao}</p>}
+
+              <div className="flex gap-3">
+                <button
+                  type="button"
+                  onClick={() => { setShowFormManutencao(false); setErroManutencao('') }}
+                  className="flex-1 h-12 border border-gray-300 bg-white text-gray-700 rounded-lg text-sm font-medium cursor-pointer hover:bg-gray-50 transition-colors"
+                >
+                  Cancelar
+                </button>
+                <button
+                  type="submit"
+                  disabled={salvandoManutencao}
+                  className="flex-1 h-12 bg-[#534AB7] text-white rounded-lg text-sm font-medium cursor-pointer hover:bg-[#443d9a] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {salvandoManutencao ? 'Salvando...' : 'Salvar'}
+                </button>
+              </div>
+            </form>
+          </div>
+        )}
+
+        {manutencoes.length === 0 && !showFormManutencao ? (
+          <div className="text-center py-4">
+            <p className="text-sm text-gray-400">Nenhuma manutenção registrada</p>
+            <p className="text-xs text-gray-300 mt-1">Registre trocas de óleo, revisões e outras manutenções</p>
+          </div>
+        ) : (
+          manutencoes.map((m) => {
+            const custoFormatado = m.custo.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })
+            return (
+              <div key={m.id} className="border border-gray-100 rounded-xl p-3 mt-2">
+                <div className="flex justify-between items-center">
+                  <span className={`px-2 py-1 rounded-full text-xs font-medium ${BADGE_TIPO_MANUTENCAO[m.tipo] ?? BADGE_TIPO_MANUTENCAO.Outro}`}>
+                    {labelTipoManutencao(m.tipo)}
+                  </span>
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs text-gray-500">{formatarDataManutencao(m.dataRealizacao)}</span>
+                    <span
+                      onClick={() => handleExcluirManutencao(m.id)}
+                      className="cursor-pointer text-gray-300 hover:text-red-400"
+                    >
+                      ✕
+                    </span>
+                  </div>
+                </div>
+                <div className="flex gap-3 mt-2">
+                  <span className="text-xs text-gray-600">{m.kmRealizacao.toLocaleString('pt-BR')} km</span>
+                  <span className="text-xs text-gray-600">{custoFormatado}</span>
+                </div>
+                {m.observacao && (
+                  <p className="text-xs text-gray-500 mt-1 italic">{m.observacao}</p>
+                )}
+              </div>
+            )
+          })
+        )}
+
+        {manutencoes.length > 0 && (
+          <div className="border-t border-gray-100 mt-3 pt-3 flex justify-between items-center">
+            <span className="text-xs text-gray-500">Total em manutenções</span>
+            <span className="text-sm font-medium text-red-600">
+              {manutencoes.reduce((soma, m) => soma + m.custo, 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
+            </span>
+          </div>
+        )}
+      </div>
 
       {/* SEÇÃO 2 — HISTÓRICO DE VIAGENS */}
       <div className="mt-2">
