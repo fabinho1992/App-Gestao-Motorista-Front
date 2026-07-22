@@ -17,9 +17,11 @@ useEffect(() => {
   async function load() {
     try {
       const res = await getVeiculos()
-      if (res.isSuccess) setVeiculos(res.data)
-      // ← não seta erro se não tiver veículos
-      // apenas deixa o array vazio
+      if (res.isSuccess) {
+        setVeiculos(res.data)
+      } else {
+        setErro(res.message) // ← adiciona isso
+      }
     } catch {
       setErro('Erro ao carregar veículos')
     } finally {
