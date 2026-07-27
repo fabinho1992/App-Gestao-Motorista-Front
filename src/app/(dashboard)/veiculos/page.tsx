@@ -47,7 +47,6 @@ useEffect(() => {
   // }, [])
 
   if (loading) return <p className="text-sm text-[#6b7280] text-center py-8">Carregando...</p>
-  if (erro) return <p className="text-sm text-red-600 text-center py-8">{erro}</p>
 
   return (
     <div className="flex flex-col gap-4">
