@@ -1,110 +1,131 @@
-'use client'
+"use client";
 
-import { useState, useRef } from 'react'
-import Button from '@/components/ui/Button'
-import { confirmarEntrega, registrarFalhaEntrega } from '@/lib/api'
+import { comprimirImagem } from "@/lib/imageCompression";
+import { useState, useRef } from "react";
+import Button from "@/components/ui/Button";
+import { confirmarEntrega, registrarFalhaEntrega } from "@/lib/api";
 
 interface FormConfirmarProps {
-  entregaId: string
-  onSuccess: () => void
+  entregaId: string;
+  onSuccess: () => void;
 }
 
-export default function FormConfirmar({ entregaId, onSuccess }: FormConfirmarProps) {
-  const [modo, setModo] = useState<'idle' | 'confirmar' | 'falha'>('idle')
-  const [loading, setLoading] = useState(false)
-  const [erro, setErro] = useState('')
-  const [fotos, setFotos] = useState<File[]>([])
-  const [motivo, setMotivo] = useState('')
-  const refCamera = useRef<HTMLInputElement>(null)
-  const refGaleria = useRef<HTMLInputElement>(null)
+export default function FormConfirmar({
+  entregaId,
+  onSuccess,
+}: FormConfirmarProps) {
+  const [modo, setModo] = useState<"idle" | "confirmar" | "falha">("idle");
+  const [loading, setLoading] = useState(false);
+  const [comprimindo, setComprimindo] = useState(false);
+  const [erro, setErro] = useState("");
+  const [fotos, setFotos] = useState<File[]>([]);
+  const [motivo, setMotivo] = useState("");
+  const refCamera = useRef<HTMLInputElement>(null);
+  const refGaleria = useRef<HTMLInputElement>(null);
 
- const fotosRef = useRef<File[]>([])
+  const fotosRef = useRef<File[]>([]);
 
-function handleFotos(e: React.ChangeEvent<HTMLInputElement>) {
-  if (e.target.files) {
-    const arquivos = Array.from(e.target.files)
-    setFotos((prev) => {
-      const novos = [...prev, ...arquivos]
-      fotosRef.current = novos  // ← atualiza a ref também
-      return novos
-    })
-  }
-  e.target.value = ''
-}
+  async function handleFotos(e: React.ChangeEvent<HTMLInputElement>) {
+    if (e.target.files) {
+      const arquivosOriginais = Array.from(e.target.files);
+      e.target.value = "";
 
-function removerFoto(index: number) {
-  setFotos((prev) => {
-    const novos = prev.filter((_, i) => i !== index)
-    fotosRef.current = novos  // ← atualiza a ref também
-    return novos
-  })
-}
+      setComprimindo(true);
+      const arquivosComprimidos = await Promise.all(
+        arquivosOriginais.map((arquivo) => comprimirImagem(arquivo)),
+      );
+      setComprimindo(false);
 
-async function handleConfirmar() {
-  setLoading(true)
-  setErro('')
-  try {
-    const fotosAtuais = fotosRef.current  // ← usa a ref em vez do estado
-    console.log('Fotos via ref:', fotosAtuais.length)
-
-    const res = await confirmarEntrega(
-      entregaId,
-      fotosAtuais.length > 0 ? fotosAtuais : undefined
-    )
-
-    if (!res.isSuccess) {
-      setErro(res.message)
-      return
+      setFotos((prev) => {
+        const novos = [...prev, ...arquivosComprimidos];
+        fotosRef.current = novos; // ← atualiza a ref também
+        return novos;
+      });
     }
-    onSuccess()
-  } catch {
-    setErro('Erro ao confirmar entrega')
-  } finally {
-    setLoading(false)
   }
-}
+
+  function removerFoto(index: number) {
+    setFotos((prev) => {
+      const novos = prev.filter((_, i) => i !== index);
+      fotosRef.current = novos; // ← atualiza a ref também
+      return novos;
+    });
+  }
+
+  async function handleConfirmar() {
+    setLoading(true);
+    setErro("");
+    try {
+      const fotosAtuais = fotosRef.current; // ← usa a ref em vez do estado
+      console.log("Fotos via ref:", fotosAtuais.length);
+
+      const res = await confirmarEntrega(
+        entregaId,
+        fotosAtuais.length > 0 ? fotosAtuais : undefined,
+      );
+
+      if (!res.isSuccess) {
+        setErro(res.message);
+        return;
+      }
+      onSuccess();
+    } catch {
+      setErro("Erro ao confirmar entrega");
+    } finally {
+      setLoading(false);
+    }
+  }
 
   async function handleFalha() {
     if (!motivo.trim()) {
-      setErro('Informe o motivo da falha')
-      return
+      setErro("Informe o motivo da falha");
+      return;
     }
-    setLoading(true)
-    setErro('')
+    setLoading(true);
+    setErro("");
     try {
-      const res = await registrarFalhaEntrega(entregaId, motivo)
+      const res = await registrarFalhaEntrega(entregaId, motivo);
       if (!res.isSuccess) {
-        setErro(res.message)
-        return
+        setErro(res.message);
+        return;
       }
-      onSuccess()
+      onSuccess();
     } catch {
-      setErro('Erro ao registrar falha')
+      setErro("Erro ao registrar falha");
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
   }
 
-  if (modo === 'idle') {
+  if (modo === "idle") {
     return (
       <div className="flex gap-2 mt-4">
-        <Button onClick={() => setModo('confirmar')} className="flex-1 min-h-[48px]">
+        <Button
+          onClick={() => setModo("confirmar")}
+          className="flex-1 min-h-[48px]"
+        >
           Confirmar entrega
         </Button>
-        <Button variant="danger" onClick={() => setModo('falha')} className="flex-1 min-h-[48px]">
+        <Button
+          variant="danger"
+          onClick={() => setModo("falha")}
+          className="flex-1 min-h-[48px]"
+        >
           Registrar falha
         </Button>
       </div>
-    )
+    );
   }
 
-  if (modo === 'confirmar') {
+  if (modo === "confirmar") {
     return (
       <div className="mt-4 p-4 bg-[#f9fafb] rounded-xl border border-[#e5e7eb]">
         <h3 className="font-semibold text-sm mb-3">Confirmar entrega</h3>
         <div className="flex flex-col gap-3">
           <div className="flex flex-col gap-2">
-            <label className="text-sm font-medium text-[#111827]">Fotos (opcional)</label>
+            <label className="text-sm font-medium text-[#111827]">
+              Fotos (opcional)
+            </label>
             <input
               ref={refCamera}
               type="file"
@@ -126,16 +147,19 @@ async function handleConfirmar() {
               <button
                 type="button"
                 onClick={() => refCamera.current?.click()}
-                className="flex-1 min-h-[48px] flex items-center justify-center gap-2 rounded-lg border border-[#e5e7eb] bg-white text-sm font-medium text-[#111827] hover:bg-gray-50 cursor-pointer transition-colors"
+                disabled={comprimindo}
+                className="flex-1 min-h-[48px] flex items-center justify-center gap-2 rounded-lg border border-[#e5e7eb] bg-white text-sm font-medium text-[#111827] hover:bg-gray-50 cursor-pointer transition-colors disabled:opacity-50"
               >
-                <span>📷</span> Tirar foto
+                <span>📷</span> {comprimindo ? "Comprimindo..." : "Tirar foto"}
               </button>
               <button
                 type="button"
                 onClick={() => refGaleria.current?.click()}
-                className="flex-1 min-h-[48px] flex items-center justify-center gap-2 rounded-lg border border-[#e5e7eb] bg-white text-sm font-medium text-[#111827] hover:bg-gray-50 cursor-pointer transition-colors"
+                disabled={comprimindo}
+                className="flex-1 min-h-[48px] flex items-center justify-center gap-2 rounded-lg border border-[#e5e7eb] bg-white text-sm font-medium text-[#111827] hover:bg-gray-50 cursor-pointer transition-colors disabled:opacity-50"
               >
-                <span>🖼️</span> Escolher da galeria
+                <span>🖼️</span>{" "}
+                {comprimindo ? "Comprimindo..." : "Escolher da galeria"}
               </button>
             </div>
           </div>
@@ -143,11 +167,15 @@ async function handleConfirmar() {
           {fotos.length > 0 && (
             <div className="flex flex-col gap-2">
               <p className="text-xs text-[#6b7280]">
-                {fotos.length} foto{fotos.length !== 1 ? 's' : ''} selecionada{fotos.length !== 1 ? 's' : ''}
+                {fotos.length} foto{fotos.length !== 1 ? "s" : ""} selecionada
+                {fotos.length !== 1 ? "s" : ""}
               </p>
               <div className="grid grid-cols-3 gap-2">
                 {fotos.map((foto, i) => (
-                  <div key={i} className="relative aspect-square rounded-lg overflow-hidden border border-[#e5e7eb]">
+                  <div
+                    key={i}
+                    className="relative aspect-square rounded-lg overflow-hidden border border-[#e5e7eb]"
+                  >
                     <img
                       src={URL.createObjectURL(foto)}
                       alt={`Foto ${i + 1}`}
@@ -168,16 +196,27 @@ async function handleConfirmar() {
 
           {erro && <p className="text-sm text-red-600">{erro}</p>}
           <div className="flex gap-2">
-            <Button onClick={handleConfirmar} loading={loading} className="flex-1 min-h-[48px]">
+            <Button
+              onClick={handleConfirmar}
+              loading={loading}
+              className="flex-1 min-h-[48px]"
+            >
               Confirmar
             </Button>
-            <Button variant="secondary" onClick={() => { setModo('idle'); setFotos([]) }} className="flex-1 min-h-[48px]">
+            <Button
+              variant="secondary"
+              onClick={() => {
+                setModo("idle");
+                setFotos([]);
+              }}
+              className="flex-1 min-h-[48px]"
+            >
               Cancelar
             </Button>
           </div>
         </div>
       </div>
-    )
+    );
   }
 
   return (
@@ -196,14 +235,23 @@ async function handleConfirmar() {
         </div>
         {erro && <p className="text-sm text-red-600">{erro}</p>}
         <div className="flex gap-2">
-          <Button variant="danger" onClick={handleFalha} loading={loading} className="flex-1 min-h-[48px]">
+          <Button
+            variant="danger"
+            onClick={handleFalha}
+            loading={loading}
+            className="flex-1 min-h-[48px]"
+          >
             Registrar
           </Button>
-          <Button variant="secondary" onClick={() => setModo('idle')} className="flex-1 min-h-[48px]">
+          <Button
+            variant="secondary"
+            onClick={() => setModo("idle")}
+            className="flex-1 min-h-[48px]"
+          >
             Cancelar
           </Button>
         </div>
       </div>
     </div>
-  )
+  );
 }
