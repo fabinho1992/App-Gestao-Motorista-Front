@@ -100,7 +100,7 @@ export default function RegistrarPage() {
   return (
     <div className="min-h-screen flex items-center justify-center px-4 py-8 bg-white">
       <div className="w-full max-w-sm">
-        <BackButton href="/login" label="Login" />
+        <BackButton href="/" label="Início" />
         <h1 className="text-2xl font-bold text-center text-[#534AB7] mb-1">Criar conta</h1>
         <p className="text-sm text-[#6b7280] text-center mb-6">Cadastre-se para começar</p>
 
