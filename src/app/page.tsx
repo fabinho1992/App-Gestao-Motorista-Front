@@ -156,6 +156,14 @@ const PWA_STEPS = [
   },
 ]
 
+const PRICING_ITEMS = [
+  'Viagens, entregas e gastos ilimitados',
+  'Relatório mensal em PDF',
+  'Alertas de troca de óleo e manutenção',
+  'Dashboard financeiro completo',
+  'Suporte via WhatsApp e e-mail',
+]
+
 function Logo() {
   return (
     <div className="flex items-center gap-2">
@@ -197,7 +205,7 @@ export default function Home() {
       {/* SEÇÃO 2 — HERO + SEÇÃO 3 — PREVIEW DO DASHBOARD */}
       <div className="bg-[#534AB7] px-6 pt-12 pb-14 text-center">
         <span className="inline-block bg-white/15 border border-white/25 rounded-full px-3 py-1.5 text-sm text-white">
-          ⭐ Gratuito para motoristas autônomos
+          ⭐ 15 dias grátis para testar
         </span>
 
         <h1 className="text-[28px] font-medium text-white leading-tight mt-3.5 mb-3.5">
@@ -213,7 +221,7 @@ export default function Home() {
             href="/registrar"
             className="min-h-[44px] flex items-center justify-center bg-white text-[#534AB7] border-0 rounded-xl px-4 py-[15px] w-full text-base font-medium"
           >
-            Criar conta grátis
+            Começar teste grátis de 15 dias
           </Link>
           <Link
             href="/login"
@@ -224,7 +232,7 @@ export default function Home() {
         </div>
 
         <p className="text-xs text-white/50 mt-4">
-          Sem cartão de crédito. Sem mensalidade.
+          15 dias grátis. Depois, apenas R$ 9,99/mês. Cancele quando quiser.
         </p>
       </div>
 
@@ -293,8 +301,62 @@ export default function Home() {
         </div>
       </div>
 
-      {/* SEÇÃO 5 — COMO FUNCIONA */}
+      {/* SEÇÃO 4.5 — PLANO E PREÇO */}
       <div className="px-6 py-10 bg-gray-50">
+        <p className="text-xs font-medium text-purple-700 uppercase tracking-wide mb-2">
+          Plano
+        </p>
+        <h2 className="text-[22px] font-medium mb-2.5">
+          Simples, sem pegadinha
+        </h2>
+        <p className="text-sm text-gray-500 mb-7">
+          Teste sem compromisso. Só paga quem decide continuar.
+        </p>
+
+        <div className="bg-white border-2 border-[#534AB7] rounded-2xl overflow-hidden shadow-sm max-w-[360px] mx-auto">
+          <div className="bg-[#534AB7] px-6 py-4 text-center">
+            <p className="text-white text-sm font-medium">Plano único Rota Certa</p>
+          </div>
+
+          <div className="px-6 py-6 text-center border-b border-gray-100">
+            <p className="text-sm text-gray-500 mb-1">Primeiros 15 dias</p>
+            <p className="text-3xl font-semibold text-green-600 mb-4">Grátis</p>
+
+            <p className="text-sm text-gray-500 mb-1">Depois</p>
+            <div className="flex items-end justify-center gap-1">
+              <span className="text-3xl font-semibold text-[#534AB7]">R$ 9,99</span>
+              <span className="text-sm text-gray-500 mb-1">/mês</span>
+            </div>
+          </div>
+
+          <div className="px-6 py-6">
+            <p className="text-sm font-medium mb-3">O que está incluso:</p>
+            <div className="flex flex-col gap-2.5">
+              {PRICING_ITEMS.map((item) => (
+                <div key={item} className="flex items-start gap-2.5">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="text-green-600 flex-shrink-0 mt-0.5">
+                    <path d="M20 6L9 17l-5-5" />
+                  </svg>
+                  <p className="text-sm text-gray-600">{item}</p>
+                </div>
+              ))}
+            </div>
+
+            <Link
+              href="/registrar"
+              className="min-h-[44px] mt-6 flex items-center justify-center bg-[#534AB7] text-white border-0 rounded-xl px-4 py-[15px] w-full text-base font-medium"
+            >
+              Começar teste grátis
+            </Link>
+            <p className="text-xs text-gray-400 text-center mt-3">
+              Sem cartão necessário para o teste. Pagamento via Pix.
+            </p>
+          </div>
+        </div>
+      </div>
+
+      {/* SEÇÃO 5 — COMO FUNCIONA */}
+      <div className="px-6 py-10">
         <p className="text-xs font-medium text-purple-700 uppercase tracking-wide mb-2">
           Como funciona
         </p>
@@ -319,7 +381,7 @@ export default function Home() {
       </div>
 
       {/* SEÇÃO 6 — REGRAS IMPORTANTES */}
-      <div className="px-6 py-10">
+      <div className="px-6 py-10 bg-gray-50">
         <p className="text-xs font-medium text-purple-700 uppercase tracking-wide mb-2">
           Regras importantes
         </p>
@@ -380,8 +442,11 @@ export default function Home() {
         <h2 className="text-2xl font-medium text-white mb-2.5">
           Pronto para ter controle das suas finanças?
         </h2>
+        <p className="text-sm text-white/75 mb-2">
+          Comece com 15 dias grátis, sem cartão de crédito.
+        </p>
         <p className="text-sm text-white/75 mb-7">
-          Junte-se aos motoristas que já usam o Rota Certa para saber exatamente quanto ganham e gastam.
+          Depois, continue por apenas <span className="font-semibold text-white">R$ 9,99/mês</span>.
         </p>
 
         <div className="flex flex-col gap-3 max-w-[300px] mx-auto">
@@ -407,6 +472,9 @@ export default function Home() {
         </div>
         <p className="text-sm text-gray-500 mb-4">
           Gestão financeira simples e eficiente para motoristas autônomos. Controle suas viagens, entregas e gastos direto do celular.
+        </p>
+        <p className="text-xs text-gray-400 mb-4">
+          15 dias grátis, depois R$ 9,99/mês. Cancele quando quiser.
         </p>
         <div className="border-t border-gray-100 pt-4">
           <p className="text-xs text-gray-400">

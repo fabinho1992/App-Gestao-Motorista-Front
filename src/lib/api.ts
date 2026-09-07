@@ -22,7 +22,6 @@ export interface LoginResponse {
 export interface RegistrarRequest {
   nome: string
   cpf: string
-  cnh: string
   telefone: string
   vencimentoCnh: string
   email: string
@@ -56,7 +55,6 @@ export interface MotoristaDto {
   cpf: string
   email: string
   telefone: string
-  cnh: string
   vencimentoCnh: string
 }
 
@@ -65,7 +63,6 @@ export interface AtualizarMotoristaRequest {
   cpf: string
   email: string
   telefone: string
-  cnh: string
   vencimentoCnh: string
 }
 

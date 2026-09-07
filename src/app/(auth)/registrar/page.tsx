@@ -20,7 +20,6 @@ export default function RegistrarPage() {
     email: '',
     cpf: '',
     telefone: '',
-    cnh: '',
     vencimentoCnh: '',
     senha: '',
   })
@@ -32,8 +31,8 @@ export default function RegistrarPage() {
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault()
-    const { nome, email, cpf, telefone, cnh, vencimentoCnh, senha } = form
-    if (!nome || !email || !cpf || !telefone || !cnh || !vencimentoCnh || !senha) {
+    const { nome, email, cpf, telefone, vencimentoCnh, senha } = form
+    if (!nome || !email || !cpf || !telefone || !vencimentoCnh || !senha) {
       setErro('Preencha todos os campos')
       return
     }
@@ -54,10 +53,6 @@ export default function RegistrarPage() {
     const telefoneNumeros = form.telefone.replace(/\D/g, '')
     if (telefoneNumeros.length < 10) {
       setErro('Telefone inválido. Informe DDD + número.')
-      return
-    }
-    if (!form.cnh || form.cnh.trim().length === 0) {
-      setErro('CNH é obrigatória.')
       return
     }
     if (form.vencimentoCnh) {
@@ -109,7 +104,6 @@ export default function RegistrarPage() {
           <Input label="Email" name="email" type="email" placeholder="seu@email.com" value={form.email} onChange={onChange} />
           <Input label="CPF" name="cpf" placeholder="000.000.000-00" inputMode="numeric" value={formatarCpf(form.cpf)} onChange={(e) => { setErro(''); setForm({ ...form, cpf: parsearCpf(e.target.value) }) }} />
           <Input label="Telefone" name="telefone" placeholder="(00) 00000-0000" inputMode="numeric" value={formatarTelefone(form.telefone)} onChange={(e) => { setErro(''); setForm({ ...form, telefone: parsearTelefone(e.target.value) }) }} />
-          <Input label="CNH" name="cnh" placeholder="Número da CNH" value={form.cnh} onChange={onChange} />
           <Input label="Vencimento CNH" name="vencimentoCnh" type="date" value={form.vencimentoCnh} onChange={onChange} />
           <div className="flex flex-col gap-1">
             <label className="text-sm font-medium text-[#111827]">Senha</label>

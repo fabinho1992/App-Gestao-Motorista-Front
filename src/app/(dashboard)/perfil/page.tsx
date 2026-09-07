@@ -22,7 +22,6 @@ export default function PerfilPage() {
     cpf: '',
     email: '',
     telefone: '',
-    cnh: '',
     vencimentoCnh: '',
   })
 
@@ -37,7 +36,6 @@ export default function PerfilPage() {
             cpf: parsearCpf(m.cpf),
             email: m.email,
             telefone: parsearTelefone(m.telefone),
-            cnh: m.cnh,
             vencimentoCnh: m.vencimentoCnh ? m.vencimentoCnh.split('T')[0] : '',
           })
         } else {
@@ -90,7 +88,6 @@ export default function PerfilPage() {
         cpf: form.cpf,
         email: form.email,
         telefone: form.telefone,
-        cnh: form.cnh,
         vencimentoCnh: form.vencimentoCnh,
       })
       if (res.isSuccess) {
@@ -129,7 +126,6 @@ export default function PerfilPage() {
         <Input label="Email *" name="email" type="email" value={form.email} onChange={onChange} />
         <Input label="CPF *" name="cpf" type="text" inputMode="numeric" value={formatarCpf(form.cpf)} onChange={(e) => setForm({ ...form, cpf: parsearCpf(e.target.value) })} />
         <Input label="Telefone *" name="telefone" type="text" inputMode="numeric" value={formatarTelefone(form.telefone)} onChange={(e) => setForm({ ...form, telefone: parsearTelefone(e.target.value) })} />
-        <Input label="CNH *" name="cnh" type="text" value={form.cnh} onChange={onChange} />
         <Input label="Vencimento CNH *" name="vencimentoCnh" type="date" value={form.vencimentoCnh} onChange={onChange} />
 
         {erro && <p className="text-sm text-red-600">{erro}</p>}
