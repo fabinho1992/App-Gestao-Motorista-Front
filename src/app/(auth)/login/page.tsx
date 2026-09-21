@@ -131,6 +131,13 @@ export default function LoginPage() {
             </div>
           </div>
 
+          <Link
+            href="/recuperar-senha"
+            className="text-sm text-[#534AB7] font-medium hover:underline self-end"
+          >
+            Esqueci minha senha
+          </Link>
+
           {erro && <p className="text-sm text-red-600">{erro}</p>}
 
           <Button type="submit" loading={loading} className="w-full">

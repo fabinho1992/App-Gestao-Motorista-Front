@@ -194,6 +194,38 @@ export interface CriarEntregaRequest {
   observacao: string
 }
 
+// Assinatura DTOs
+export type StatusAssinatura =
+  | 'TrialAtivo'
+  | 'Ativa'
+  | 'Vencida'
+  | 'Inadimplente'
+  | 'Cancelada'
+
+export interface AssinaturaStatusDto {
+  status: StatusAssinatura
+  trialFimEm: string | null
+  proximaCobrancaEm: string | null
+  diasRestantes: number
+}
+
+export interface PixRenovacaoDto {
+  qrCodeBase64: string
+  pixCopiaECola: string
+  expiracao: string
+}
+
+export function assinaturaBloqueada(status: StatusAssinatura): boolean {
+  return status === 'Vencida' || status === 'Inadimplente'
+}
+
+// Senha DTOs
+export interface AlterarSenhaRequest {
+  email: string
+  code: string
+  password: string
+}
+
 function getToken(): string | null {
   if (typeof window === 'undefined') return null
   return localStorage.getItem('token')
@@ -245,6 +277,38 @@ export async function registrar(body: RegistrarRequest) {
   return request<string>('/api/v1/auth/registrar', {
     method: 'POST',
     body: JSON.stringify(body),
+  })
+}
+
+// Senha
+export async function solicitarResetSenha(email: string) {
+  return request<string>('/api/v1/email/solicitar-reset', {
+    method: 'POST',
+    body: JSON.stringify({ email }),
+  })
+}
+
+export async function alterarSenha(body: AlterarSenhaRequest) {
+  return request<string>('/api/v1/email/alterar', {
+    method: 'POST',
+    body: JSON.stringify(body),
+  })
+}
+
+// Assinatura
+export async function getStatusAssinatura() {
+  return request<AssinaturaStatusDto>('/api/v1/assinatura/status')
+}
+
+export async function renovarAssinatura() {
+  return request<PixRenovacaoDto>('/api/v1/assinatura/renovar', {
+    method: 'POST',
+  })
+}
+
+export async function iniciarAssinatura() {
+  return request<PixRenovacaoDto>('/api/v1/assinatura/checkout', {
+    method: 'POST',
   })
 }
 
@@ -344,6 +408,26 @@ export async function getVeiculoDetalhes(id: string) {
 export async function trocarOleoVeiculo(id: string) {
   return request<VeiculoComAlerta>(`/api/v1/veiculo/${id}/trocar-oleo`, {
     method: 'PUT',
+  })
+}
+
+//Email
+export interface StatusEmailDto {
+  emailConfirmado: boolean
+}
+
+export async function getStatusEmail() {
+  return request<StatusEmailDto>('/api/v1/email/status')
+}
+
+export async function solicitarConfirmacaoEmail() {
+  return request<string>('/api/v1/email/solicitar-confirmacao', { method: 'POST' })
+}
+
+export async function confirmarEmail(code: string) {
+  return request<string>('/api/v1/email/confirmar', {
+    method: 'POST',
+    body: JSON.stringify({ code }),
   })
 }
 

@@ -16,7 +16,7 @@ const COR_FUNDO_CLARO: [number, number, number] = [249, 250, 251]
 const COR_FUNDO_CABECALHO: [number, number, number] = [243, 244, 246]
 
 const ALTURA_VIAGEM_ESTIMADA = 60
-const GAP_ENTRE_VIAGENS = 5
+const GAP_ENTRE_VIAGENS = 10
 
 function formatarMoeda(valor: number): string {
   return valor.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })
@@ -76,12 +76,17 @@ export function gerarRelatorioPdf(
     cor: [number, number, number] = COR_TEXTO_ESCURO,
     bold = false
   ) {
-    doc.setFont('helvetica', bold ? 'bold' : 'normal')
+    const rightEdge = x + width - 4
+
+    doc.setFont('helvetica', 'normal')
     doc.setFontSize(9)
     doc.setTextColor(...COR_TEXTO_CINZA)
     doc.text(label, x + 4, y)
+
+    doc.setFont('helvetica', bold ? 'bold' : 'normal')
     doc.setTextColor(...cor)
-    doc.text(valor, x + width - 4, y, { align: 'right' })
+    const valorWidth = doc.getTextWidth(valor)
+    doc.text(valor, rightEdge - valorWidth, y)
   }
 
   function linhaViagem(
@@ -162,7 +167,7 @@ export function gerarRelatorioPdf(
   doc.text('Gastos do Mês', MARGIN_LEFT, 80)
 
   const boxGastosY = 86
-  const boxGastosHeight = 40
+  const boxGastosHeight = 46
   const boxGastosWidth = 87
   const boxEsquerdaX = MARGIN_LEFT
   const boxDireitaX = MARGIN_LEFT + boxGastosWidth + 6

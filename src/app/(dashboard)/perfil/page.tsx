@@ -3,6 +3,8 @@
 import { useState, useEffect } from 'react'
 import Input from '@/components/ui/Input'
 import Button from '@/components/ui/Button'
+import StatusAssinaturaCard from '@/components/features/assinatura/StatusAssinaturaCard'
+import EmailConfirmacaoBanner from '@/components/features/email/EmailConfirmacaoBanner'
 import { getMotorista, atualizarMotorista, resetarDados } from '@/lib/api'
 import { logout } from '@/lib/auth'
 import { formatarCpf, parsearCpf, formatarTelefone, parsearTelefone } from '@/lib/masks'
@@ -120,6 +122,9 @@ export default function PerfilPage() {
   return (
     <div>
       <h1 className="text-xl font-bold text-[#111827] mb-6">Meu Perfil</h1>
+
+      <StatusAssinaturaCard />
+      <EmailConfirmacaoBanner />
 
       <form onSubmit={onSubmit} className="flex flex-col gap-3">
         <Input label="Nome *" name="nome" type="text" value={form.nome} onChange={onChange} />

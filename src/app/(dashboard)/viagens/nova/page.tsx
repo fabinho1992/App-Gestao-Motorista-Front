@@ -122,7 +122,7 @@ export default function NovaViagemPage() {
         setErro(res.message);
         return;
       }
-      router.push("/dashboard");
+      router.push(`/viagens/${res.data}`)
     } catch {
       setErro("Erro ao criar viagem");
     } finally {
